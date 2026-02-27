@@ -1,7 +1,7 @@
 # CLAUDE.md — Ando MVP Build Plan
 
 **Architect:** Claude (Sonnet 4.6)  
-**Version:** 1.0  
+**Version:** 1.1  
 **Date:** February 2026  
 **Stage:** Friends & Founder — 5–20 users
 
@@ -29,8 +29,8 @@ Everything in this plan is chosen to answer that question as fast as possible.
 - ✅ Step 1 — Project Foundation complete and committed
 - ✅ Step 2 — Auth complete and committed (Google OAuth, middleware, session)
 - ✅ Step 3 — Onboarding complete and committed (quiz, profile upsert, dashboard guard)
-- 🔲 Step 4 — Trip Creation (next)
-- 🔲 Step 5 — AI Generation
+- ✅ Step 4 — Trip Creation complete and committed
+- 🔲 Step 5 — AI Generation (next)
 - 🔲 Step 6 — Polish, PWA & Invite Friends
 
 **Edge case status:**
@@ -39,15 +39,15 @@ Everything in this plan is chosen to answer that question as fast as possible.
 - ✅ Edge Case 007 — Dashboard accessible mid-session with onboarded: false (fixed in Step 3)
 - ⚠️ Edge Case 002 — OpenAI malformed JSON (fix in Step 5)
 - ⚠️ Edge Case 003 — Regenerate button double-tap race condition (fix in Step 5)
-- ⚠️ Edge Case 004 — Invalid trip dates (fix in Step 4)
+- ✅ Edge Case 004 — Invalid trip dates (fixed in Step 4)
 - ⚠️ Edge Case 005 — Vercel 60s timeout on long trips (fix in Step 4 + 5)
 - ⚠️ Edge Case 006 — Service role key bypasses RLS (audit in Step 5)
+- ✅ Edge Case 008 — UTC offset shifts displayed dates by one day (fixed in Step 4)
 
 **Immediate next actions:**
 
-1. Replace CLAUDE.md in project folder with latest version
-2. Commit Step 3 completion to git
-3. Start Step 4 — Trip Creation with date validation baked in from Edge Case 004
+1. Replace CLAUDE.md in project folder with this version
+2. Start Step 5 — AI Generation
 
 **Key decisions already made — do not revisit:**
 
@@ -57,8 +57,11 @@ Everything in this plan is chosen to answer that question as fast as possible.
 - Synchronous OpenAI calls, no job queue until >50 concurrent users
 - Max trip duration 14 days (token limit + Vercel timeout protection)
 - Profile row created at login via upsert, onboarding only updates
+- **Trip form only creates the trip record. Generation is triggered from `/trips/[id]` via an explicit button. Steps 4 and 5 are decoupled. (Option B)**
 
 ---
+
+## Guiding Rules for This Phase
 
 1. **No over-engineering.** If a feature isn't needed to answer the core question, cut it.
 2. **Postgres schema is sacred.** Get the data model right. Everything else is throwaway.
@@ -100,17 +103,17 @@ ando/
 │   │   ├── dashboard/page.tsx   # My trips list
 │   │   ├── trips/
 │   │   │   ├── new/page.tsx     # Create trip form
-│   │   │   └── [id]/page.tsx    # Trip + itinerary view
+│   │   │   └── [id]/page.tsx    # Trip detail + itinerary view + Generate button
 │   │   └── onboarding/page.tsx  # Travel style quiz (first login)
 │   └── api/
 │       ├── itineraries/
-│       │   └── generate/route.ts  # POST — calls OpenAI
+│       │   └── generate/route.ts  # POST — called from /trips/[id], not from form
 │       └── trips/
 │           └── route.ts           # CRUD
 ├── components/
 │   ├── ui/                      # Button, Card, Input, Badge
 │   ├── trip/
-│   │   ├── TripForm.tsx         # New trip form
+│   │   ├── TripForm.tsx         # New trip form — creates record only, no generation
 │   │   └── TripCard.tsx         # Trip list item
 │   └── itinerary/
 │       ├── ItineraryView.tsx    # Full day-by-day view
@@ -222,52 +225,6 @@ CREATE TRIGGER trg_trips_updated_at
     BEFORE UPDATE ON public.trips
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 ```
-
----
-
-## Data Integrity Rules
-
-These are invariants — rules that must always be true in the database. Claude Code must never violate these regardless of the step being implemented.
-
-**Rule 1 — Every authenticated user must always have a profiles row.**
-Profile creation happens in the auth callback immediately after login using upsert with `onConflict: 'id'`. Never rely on onboarding to create the row. Onboarding only updates an existing row.
-
-```typescript
-// In auth callback — runs on every login, safe to repeat
-await supabase.from("profiles").upsert(
-  {
-    id: user.id,
-    display_name: user.user_metadata.full_name,
-    avatar_url: user.user_metadata.avatar_url,
-    onboarded: false,
-  },
-  { onConflict: "id" },
-); // no-op if row already exists
-```
-
-```typescript
-// In onboarding submit — updates existing row only
-await supabase
-  .from("profiles")
-  .update({
-    travel_style: { pace, budget, interests },
-    preferences: { dietary },
-    onboarded: true,
-  })
-  .eq("id", user.id);
-```
-
-**Rule 2 — Never assume a profiles row is complete.**
-Always handle the case where `travel_style` or `preferences` is an empty object `{}`. Use optional chaining and fallbacks everywhere:
-
-```typescript
-profile.travel_style?.pace ?? "medium";
-profile.travel_style?.interests ?? [];
-profile.preferences?.dietary ?? [];
-```
-
-**Rule 3 — Trip must always belong to an existing profile.**
-The foreign key `trips.user_id → profiles.id` enforces this at the DB level. Never create a trip before confirming the profiles row exists.
 
 ---
 
@@ -427,17 +384,23 @@ Currency: ${trip.currency}`;
 
 /trips/new
   └── Form: destination, dates, travelers, budget
-  └── Submit → creates trip record → calls /api/itineraries/generate
-  └── Loading state (spinner with "Ando is planning your trip...")
+  └── Submit → creates trip record ONLY (no generation triggered here)
   └── → /trips/[id]
 
 /trips/[id]
-  └── Trip header (destination, dates)
-  └── ItineraryView (day-by-day)
+  └── Trip header (destination, dates, traveler count)
+  └── "Generate Itinerary" button (Step 4: visible, disabled placeholder)
+      └── On click (Step 5): calls POST /api/itineraries/generate
+      └── Loading state: spinner with "Ando is planning your trip..."
+      └── On complete: renders ItineraryView
+  └── ItineraryView (day-by-day) — rendered once itinerary exists
       └── DayCard × N days
           └── ActivityItem × N activities per day
-  └── "Regenerate" button (calls generate API again)
+  └── "Regenerate" button — replaces Generate button once itinerary exists
 ```
+
+**Why generation lives on `/trips/[id]` and not in the form (Option B):**
+Steps 4 and 5 are decoupled. Step 4 ships and is fully testable without Step 5 existing. The trip page is the command center — it owns the generate/regenerate lifecycle. When async generation is introduced (job queue, 1M+ users), only the button handler changes. No form refactoring required.
 
 ---
 
@@ -464,45 +427,56 @@ Work through these in sequence. Each step produces something usable.
 - [x] /login page with Google button
 - [x] Auth callback route (/app/(auth)/callback/route.ts)
 - [x] Middleware to protect /app routes (redirect to /login if no session)
+- [x] Auth callback upserts profile row on every login (fix for Edge Case 001)
 - [x] Test: can log in, session persists on refresh
 ```
 
-### Step 3 — Onboarding
+### Step 3 — Onboarding ✅ Complete
 
 ```
 - [x] /onboarding page with travel style quiz
 - [x] 4 questions: pace, budget level, interests (multi-select), dietary restrictions
-- [x] On submit: upsert to profiles table, set onboarded=true
+- [x] On submit: update profiles row, set onboarded=true (never insert — row exists from auth callback)
 - [x] Redirect logic: if !onboarded → /onboarding, else → /dashboard
+- [x] Dashboard page guard: server-side check on every load (fix for Edge Case 007)
 - [x] Test: new user lands on quiz, returning user skips it
 ```
 
-### Step 4 — Trip Creation
+### Step 4 — Trip Creation ✅ Complete
 
 ```
-- [ ] /dashboard page showing trip list (empty state with CTA)
-- [ ] /trips/new form (destination, start_date, end_date, traveler_count, budget)
-- [ ] POST /api/trips route to create trip record
-- [ ] TripCard component for dashboard list
-- [ ] Test: create a trip, see it on dashboard
+- [x] /dashboard updated: trip list (TripCard grid), empty state CTA, "New trip" button in header
+- [x] /trips/new page with TripForm component
+- [x] TripForm: destination, trip name (optional), dates, traveler count, budget + currency
+- [x] TripForm validation: end date ≥ start, max 14 days, no past start dates (Edge Case 004 ✅)
+- [x] End date input resets when start date changes to a later value (UX guard)
+- [x] POST /api/trips — server-side validation mirrors client rules exactly; createServerClient only
+- [x] GET /api/trips — returns non-archived trips with itinerary join for status indicator
+- [x] TripCard: destination, title, date range, traveler count, "Itinerary ready" / "No itinerary" badge
+- [x] /trips/[id] scaffold: destination, dates, travelers, budget + disabled "Generate Itinerary" placeholder
+- [x] lib/types.ts: added TripStatus (named type) and TripFormData
+- [x] Test: build passes, all 9 routes compile cleanly
 ```
 
-### Step 5 — AI Generation (core feature)
+### Step 5 — AI Generation 🔲
 
 ```
 - [ ] lib/openai/client.ts and prompts.ts
-- [ ] POST /api/itineraries/generate route
-- [ ] Trigger generation automatically after trip creation
-- [ ] Loading state on /trips/[id] while generating
+- [ ] POST /api/itineraries/generate route (wrap in try/catch — Edge Case 002)
+- [ ] Wire "Generate Itinerary" button on /trips/[id] to call generate API
+- [ ] isGenerating state: disable button immediately on click, re-enable on response (Edge Case 003)
+- [ ] Loading state on /trips/[id] while generating ("Ando is planning your trip...")
 - [ ] ItineraryView, DayCard, ActivityItem components
+- [ ] OpenAI timeout set to 45s (buffer before Vercel's 60s limit — Edge Case 005)
+- [ ] Audit: confirm service role key is never used in API route handlers (Edge Case 006)
 - [ ] Test: generate an itinerary for a real destination, verify output quality
 ```
 
-### Step 6 — Polish, PWA & Invite Friends
+### Step 6 — Polish, PWA & Invite Friends 🔲
 
 ```
 - [ ] Error handling (OpenAI timeout, failed generation → friendly message)
-- [ ] Regenerate button on itinerary view
+- [ ] Regenerate button replaces Generate button once itinerary exists
 - [ ] Mobile-responsive layout (test on iPhone Safari + Android Chrome)
 - [ ] Sentry error tracking wired up
 - [ ] PWA setup — add to home screen support:
@@ -511,9 +485,32 @@ Work through these in sequence. Each step produces something usable.
       - [ ] Create 192x192 and 512x512 app icons (public/icons/)
       - [ ] Set viewport meta tag for mobile fullscreen feel
       - [ ] Test: open on iPhone Safari → Share → Add to Home Screen → launches fullscreen
-- [ ] Share link to /trips/[id] (send to friends to preview their itinerary)
+- [ ] Share link to /trips/[id] (read-only view for non-owners)
 - [ ] Invite 3–5 friends via link, watch them use it, take notes
 ```
+
+---
+
+## Data Integrity Rules
+
+These rules govern how rows are created and updated. Every future step must follow them.
+
+**profiles table:**
+
+- Row is created at login via upsert in the auth callback. Always. Even if the row already exists, upsert is safe.
+- Onboarding only calls update (never insert). It sets travel_style, preferences, and onboarded=true on the existing row.
+- This guarantees every authenticated user always has a profiles row.
+
+**trips table:**
+
+- Row is created by POST /api/trips when the user submits the trip form.
+- Generation does not create a new trip — it only creates an itinerary row linked to an existing trip.
+
+**itineraries table:**
+
+- Row is created by POST /api/itineraries/generate.
+- Before inserting a new itinerary, deactivate all previous itineraries for that trip (set is_active=false).
+- Only one itinerary per trip should ever have is_active=true.
 
 ---
 
@@ -535,18 +532,18 @@ That last question is the only metric that matters right now.
 
 These are real features but they do not belong in this version:
 
-| Feature                      | Why it's out                                                                               | When to add it                               |
-| ---------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------- |
-| Async job queue (SQS/BullMQ) | OpenAI is fast enough for 20 users                                                         | When >50 concurrent users cause timeouts     |
-| Redis caching                | Supabase handles this load easily                                                          | When DB queries exceed 100ms consistently    |
-| Elasticsearch                | Postgres FTS is sufficient                                                                 | When place search becomes a bottleneck       |
-| Offline mode                 | Friends will have internet                                                                 | When real travelers use it in the field      |
-| Push notifications           | Email works for now                                                                        | When async generation is introduced          |
-| Booking links                | Distraction from core value                                                                | Phase 2                                      |
-| Social features              | Not needed to validate core                                                                | Phase 3                                      |
-| Mobile app (React Native)    | PWA covers friends stage; native app when App Store presence justified                     | When retention data justifies the investment |
-| GraphQL API                  | Supabase client is sufficient for web; GraphQL added when React Native mobile app is built | When React Native mobile app is introduced   |
-| Fine-tuned model             | GPT-4o is good enough to validate                                                          | When you hit $500+/month in LLM costs        |
+| Feature                      | Why it's out                                                                     | When to add it                               |
+| ---------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------- |
+| Async job queue (SQS/BullMQ) | OpenAI is fast enough for 20 users                                               | When >50 concurrent users cause timeouts     |
+| Redis caching                | Supabase handles this load easily                                                | When DB queries exceed 100ms consistently    |
+| Elasticsearch                | Postgres FTS is sufficient                                                       | When place search becomes a bottleneck       |
+| Offline mode                 | Friends will have internet                                                       | When real travelers use it in the field      |
+| Push notifications           | Email works for now                                                              | When async generation is introduced          |
+| Booking links                | Distraction from core value                                                      | Phase 2                                      |
+| Social features              | Not needed to validate core                                                      | Phase 3                                      |
+| Mobile app (React Native)    | PWA covers friends stage; native app when App Store presence justified           | When retention data justifies the investment |
+| GraphQL API                  | Supabase client sufficient for single web client; add when React Native is built | When React Native mobile app is introduced   |
+| Fine-tuned model             | GPT-4o is good enough to validate                                                | When you hit $500+/month in LLM costs        |
 
 ---
 
@@ -556,7 +553,7 @@ These are real features but they do not belong in this version:
 # .env.local
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key   # server-side only, never expose
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key   # server-side only, never expose, never use in API routes
 OPENAI_API_KEY=your_openai_key
 NEXT_PUBLIC_APP_URL=http://localhost:3000           # update for production
 ```
@@ -596,207 +593,73 @@ When the time comes to expand, split it like this:
 
 ---
 
-_Maintained by: Ando Engineering_  
-_Last updated: February 2026 — Step 1 complete_  
-_Next review: When first 5 friends have used it on a real trip_
-
----
-
 ## Architecture Decisions Log
 
-| Date     | Decision                                     | Rationale                                                                                                                                      |
-| -------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Feb 2026 | Web app (Next.js) before React Native        | Faster to ship, easier to iterate, web familiar. Friends can use via browser or Add to Home Screen.                                            |
-| Feb 2026 | PWA instead of native app for friends stage  | No App Store friction. Friends get home screen icon via Safari/Chrome share sheet. Feels like an app.                                          |
-| Feb 2026 | Supabase client instead of GraphQL           | GraphQL overhead not justified for single web client. Introduce GraphQL when React Native app is built and multiple clients need a shared API. |
-| Feb 2026 | Supabase Auth instead of Auth0               | Free tier sufficient. Same OAuth 2.0 standard. Swap to Auth0 only if enterprise SSO is needed.                                                 |
-| Feb 2026 | Synchronous OpenAI call instead of job queue | 5–15 second wait acceptable for 20 users. Add BullMQ queue when concurrent generation causes timeouts.                                         |
+| Date     | Decision                                                                      | Rationale                                                                                                                                                                                                                                                                                |
+| -------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Feb 2026 | Rename Backpackr → Ando                                                       | Broader brand appeal; not limited to backpacker demographic                                                                                                                                                                                                                              |
+| Feb 2026 | Web app (Next.js) before React Native                                         | Faster to ship, easier to iterate. Friends can use via browser or Add to Home Screen.                                                                                                                                                                                                    |
+| Feb 2026 | PWA instead of native app for friends stage                                   | No App Store friction. Friends get home screen icon via Safari/Chrome share sheet.                                                                                                                                                                                                       |
+| Feb 2026 | Supabase client instead of GraphQL                                            | GraphQL overhead not justified for single web client. Introduce when React Native app is built.                                                                                                                                                                                          |
+| Feb 2026 | Supabase Auth instead of Auth0                                                | Free tier sufficient. Same OAuth 2.0 standard. Swap to Auth0 only if enterprise SSO needed.                                                                                                                                                                                              |
+| Feb 2026 | Synchronous OpenAI call instead of job queue                                  | 5–15 second wait acceptable for 20 users. Add BullMQ when concurrent generation causes timeouts.                                                                                                                                                                                         |
+| Feb 2026 | Profile row created at auth callback, not onboarding                          | Prevents orphaned sessions. Single source of truth for row creation. Documented in Data Integrity Rules.                                                                                                                                                                                 |
+| Feb 2026 | Max trip duration 14 days                                                     | Keeps prompt size manageable. Protects against Vercel 60s timeout (Edge Case 005).                                                                                                                                                                                                       |
+| Feb 2026 | Generation triggered from /trips/[id], not from form (Option B)               | Decouples Steps 4 and 5. Each ships independently. When async generation is introduced, only the button handler changes — no form refactoring needed.                                                                                                                                    |
+| Feb 2026 | Server components query Supabase directly; API routes are for client-side use | Avoids unnecessary HTTP round-trips on first load. Server components (dashboard, trip page) use `createServerClient` directly. API routes (`/api/trips`, `/api/itineraries`) exist for React Query calls from client components. Never fetch internal API routes from server components. |
 
 ---
 
-## Bug & Edge Case Log
+## Edge Cases Log
 
-A record of issues discovered, how we found them, the decision made, and why. Use this to understand past mistakes and avoid repeating them.
+### Edge Case 001 — Profile row not created on login ✅ Fixed in Step 3
 
----
-
-### Edge Case 001 — Profile row not created on first login
-
-**Date:** February 2026  
-**Discovered by:** Founder reviewing Supabase Table Editor after Step 2  
-**Stage discovered:** After Step 2 (Auth) was built, before Step 3 (Onboarding) ran
-
-**What happened:**
-After completing Google OAuth login in Step 2, the founder checked the Supabase Table Editor and noticed `public.profiles` was empty. The original architecture assumed the onboarding quiz (Step 3) would create the profiles row on form submit. No code existed to create the row at login time.
-
-**Why it was missed:**
-The schema and onboarding logic were each designed correctly in isolation. The gap was at the boundary between them — the transition from `auth.users` (Supabase-managed) to `public.profiles` (our table) was never explicitly documented as a responsibility. The architect (Claude) designed each component without stress-testing the seams between them.
-
-**The risk if left unfixed:**
-A user could log in, close the browser before finishing onboarding, and return later with no profiles row. Any code that queries profiles and assumes a row exists would throw an error. The onboarding redirect check (`!onboarded → /onboarding`) would fail silently or crash instead of gracefully redirecting.
-
-**Decision made:**
-Split profile lifecycle into two distinct responsibilities:
-
-1. **Auth callback** — always creates the profiles row via upsert with `onConflict: 'id'` immediately after every login. Safe to run on repeat logins — no-op if row already exists.
-2. **Onboarding submit** — only updates the existing row with travel style, preferences, and `onboarded=true`. Never creates.
-
-This guarantees every authenticated user always has a profiles row regardless of whether they complete onboarding.
-
-**Why this approach over alternatives:**
-
-- Considered using a Supabase database trigger on `auth.users` insert to auto-create the profiles row. Rejected because triggers are invisible to the codebase — a future developer wouldn't know the row was being created there, making debugging harder.
-- Considered creating the row lazily on first dashboard load. Rejected because it spreads the responsibility across multiple places and still leaves gaps.
-- Chosen approach keeps the logic in one explicit place (auth callback), is readable, and is documented here and in Data Integrity Rules.
-
-**Fix applied:** Step 3 was already built before this was caught. A retroactive fix prompt was given to Claude Code to update the auth callback to add the upsert, and to update onboarding to only call update (not upsert). Data Integrity Rules section added to CLAUDE.md to prevent similar gaps in future steps.
-
-**Lesson:** Before building each step, explicitly map the data lifecycle at the boundaries — who creates each row, who updates it, and what happens if the user drops off mid-flow.
+Auth callback now upserts a profiles row on every login. Onboarding only calls update on the existing row.
 
 ---
 
-### Edge Case 007 — Dashboard accessible mid-session even if onboarded: false
+### Edge Case 007 — Dashboard accessible mid-session with onboarded: false ✅ Fixed in Step 3
 
-**Date:** February 2026  
-**Discovered by:** Founder testing manually — set onboarded: false in Supabase without logging out, dashboard still loaded  
-**Stage:** Discovered during Step 3 verification
-
-**What happened:**
-The onboarding redirect check only runs in the auth callback at login time. Once a session is established, navigating directly to `/dashboard` bypasses the check entirely. A user who abandons onboarding mid-session, or whose profile is manually reset, can still access the dashboard with an incomplete profile.
-
-**The risk if left unfixed:**
-User reaches dashboard with empty `travel_style` and `preferences`. When they create a trip and generate an itinerary, the prompt falls back to all defaults — generic itinerary with no personalization. Worse, if any dashboard code assumes profile data exists, it could throw an error.
-
-**Decision made:**
-Add a server-side onboarding guard directly in `app/(app)/dashboard/page.tsx`. It fetches the profile using the server Supabase client before the page renders. If `onboarded: false` or profile is missing, it redirects to `/onboarding`. This runs on every dashboard load regardless of session state.
-
-```typescript
-// app/(app)/dashboard/page.tsx
-import { createServerClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-
-export default async function DashboardPage() {
-  const supabase = createServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("onboarded")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || !profile.onboarded) redirect("/onboarding");
-
-  // safe to render dashboard
-}
-```
-
-**Why not handle this in middleware instead?**
-Middleware runs on every request and doesn't have easy access to database data — it only sees cookies and headers. Fetching the profile in middleware would add a Supabase round-trip to every single page load, including static assets. Keeping the check in the dashboard page itself keeps it targeted and efficient.
-
-**Fix applied:** Retroactive fix prompt given to Claude Code after Step 3 was built.
-
-**Lesson:** Auth callback guards protect the login flow. Page-level guards protect direct navigation. Both are needed. Any page that requires a complete profile should have its own server-side check.
+Dashboard page performs a server-side profile fetch on every load. If `onboarded: false` or profile missing, redirects to `/onboarding`.
 
 ---
 
-### Edge Case 002 — OpenAI returns malformed or unexpected JSON
+### Edge Case 002 — OpenAI returns malformed or unexpected JSON ⚠️ Fix in Step 5
 
-**Date:** February 2026  
-**Discovered by:** Architect review before Step 5  
-**Stage:** Not yet built — catch before Step 5
-
-**What happened:**
-The generation route has no error handling around the OpenAI response. `JSON.parse(completion.choices[0].message.content!).days` throws an uncaught exception if OpenAI times out, refuses the request, or returns anything other than valid JSON. The trip record exists in the database but no itinerary is ever saved, leaving the user on a broken page with no explanation.
-
-**The risk if left unfixed:**
-Silent failures that look like bugs to the user. No way to retry because the UI has no error state. No record in the database of what went wrong.
-
-**Decision made:**
-Wrap the entire OpenAI call and JSON parse in a try/catch. On failure, return a structured error response the UI can display. Add a `generation_status` field to the itinerary insert — values: `pending`, `complete`, `failed` — so the UI always knows what state it's in.
-
-**Fix:** Address in Step 5 before building the generation route.
+Wrap the entire OpenAI call and JSON parse in try/catch. Return a structured error response the UI can display. Do not let the trip page hang silently.
 
 ---
 
-### Edge Case 003 — User hits Regenerate while generation is already running
+### Edge Case 003 — User hits Generate/Regenerate while generation is already running ⚠️ Fix in Step 5
 
-**Date:** February 2026  
-**Discovered by:** Architect review before Step 5  
-**Stage:** Not yet built — catch before Step 5
-
-**What happened:**
-The regenerate flow deactivates previous itineraries then inserts a new one. Two concurrent calls racing could result in both deactivating each other, or a second insert overwriting the first before it completes.
-
-**The risk if left unfixed:**
-Zero active itineraries for a trip, or a half-written itinerary displayed to the user.
-
-**Decision made:**
-Disable the Regenerate button immediately on click and re-enable only when the response returns (success or error). A simple `isGenerating` boolean in React state is sufficient at this scale. No server-side locking needed for 20 users.
-
-**Fix:** Address in Step 5 when building the Regenerate button.
+Disable the button immediately on click. Re-enable only when the response returns (success or error). `isGenerating` boolean in React state is sufficient at this scale.
 
 ---
 
-### Edge Case 004 — Invalid trip dates crash the generation prompt
+### Edge Case 004 — Invalid trip dates ✅ Fixed in Step 4
 
-**Date:** February 2026  
-**Discovered by:** Architect review before Step 4  
-**Stage:** Not yet built — catch before Step 4
-
-**What happened:**
-No validation exists to ensure `end_date` is after `start_date`, or that the trip duration is reasonable. If `end_date` is before `start_date`, the days calculation returns 0 or negative. If the trip is 60+ days, the prompt is enormous and likely hits OpenAI's context limit.
-
-**The risk if left unfixed:**
-Nonsensical prompts sent to OpenAI, failed generations, or token limit errors with no user feedback.
-
-**Decision made:**
-Add client-side validation in the trip form:
-
-- `end_date` must be after `start_date`
-- Maximum trip duration of 21 days for this stage (keeps prompt size manageable)
-- Show inline error messages, do not allow form submission if invalid
-
-**Fix:** Address in Step 4 when building the trip creation form.
+Client-side validation in TripForm and server-side validation in POST /api/trips both enforce: destination required, start date not in the past, end date ≥ start date, max 14 days. End date input also resets automatically when the user picks a start date later than the current end date.
 
 ---
 
-### Edge Case 005 — Vercel free tier 60-second timeout
+### Edge Case 005 — Vercel 60s serverless timeout ⚠️ Monitor in Step 5
 
-**Date:** February 2026  
-**Discovered by:** Architect review before Step 5  
-**Stage:** Not yet built — monitor in Step 5
-
-**What happened:**
-Vercel serverless functions time out at 60 seconds on the free tier. OpenAI can take 15–30 seconds for longer itineraries. A 14-day trip on a slow OpenAI response risks hitting this limit. The function times out, Vercel returns a 504, and the trip is left in a broken state with no itinerary and no error recorded.
-
-**The risk if left unfixed:**
-Users on longer trips get silent failures. No way to detect or retry from the UI.
-
-**Decision made:**
-Cap trip duration at 14 days for now (also mitigates Edge Case 004). Add OpenAI timeout configuration of 45 seconds, leaving buffer before Vercel's limit. If we hit this in testing, upgrade to Vercel Pro (300s limit) before inviting friends. Add this to the graduation checklist.
-
-**Fix:** Cap enforced in Step 4 form validation. Timeout configured in Step 5.
+14-day cap (Step 4) reduces prompt size. Set OpenAI timeout to 45s in Step 5 to leave buffer. If timeouts occur in testing, upgrade to Vercel Pro (300s limit) before inviting friends.
 
 ---
 
-### Edge Case 006 — Service role key bypasses RLS
+### Edge Case 006 — Service role key bypasses RLS ⚠️ Audit in Step 5
 
-**Date:** February 2026  
-**Discovered by:** Architect review  
-**Stage:** Ongoing — audit every step
+`SUPABASE_SERVICE_ROLE_KEY` must never be used in API route handlers. All routes use `createServerClient` from `lib/supabase/server.ts`. Add a warning comment to the service role client file. Audit all routes in Step 5.
 
-**What happened:**
-`SUPABASE_SERVICE_ROLE_KEY` bypasses RLS entirely by design — it's meant for admin operations only. If Claude Code accidentally uses the service role client in API routes instead of the regular server client, RLS stops protecting user data. Any user could potentially access any other user's trips.
+---
 
-**The risk if left unfixed:**
-Complete data exposure. User A can read, modify, or delete User B's trips.
+### Edge Case 008 — UTC offset shifts displayed dates by one day ✅ Fixed in Step 4
 
-**Decision made:**
-Service role client must only be used for operations that legitimately need to bypass RLS — none exist in this MVP. All API routes use the regular server client (`lib/supabase/server.ts`) which respects RLS. Add a code comment to the service role client file warning against use in API routes.
+Date strings from Supabase (`YYYY-MM-DD`) must always have `T00:00:00` appended before passing to `new Date()`. Without it, JavaScript interprets the date as UTC midnight, which shifts the displayed date backward by one day for users in negative UTC offset timezones (US, Canada, Latin America). Apply this rule anywhere dates are rendered — itinerary day headers and activity timestamps in Step 5 are the next risk areas.
 
-**Fix:** Audit `lib/supabase/server.ts` and all API routes in Step 5 to confirm service role key is never used in request handlers.
+---
+
+_Maintained by: Ando Engineering_  
+_Last updated: 2026-02-27 — Steps 1–4 complete, Edge Case 008 logged, server component data fetching pattern established_
+_Next review: When first 5 friends have used it on a real trip_

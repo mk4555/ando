@@ -21,6 +21,8 @@ export interface TravelPreferences {
   accommodation?: 'hostel' | 'hotel' | 'airbnb'
 }
 
+export type TripStatus = 'draft' | 'active' | 'completed' | 'archived'
+
 export interface Trip {
   id: string
   user_id: string
@@ -32,10 +34,21 @@ export interface Trip {
   traveler_count: number
   budget_total: number | null
   currency: string
-  status: 'draft' | 'active' | 'completed' | 'archived'
+  status: TripStatus
   metadata: Record<string, unknown>
   created_at: string
   updated_at: string
+}
+
+// Shape of the trip creation form
+export interface TripFormData {
+  destination: string
+  title: string           // empty string when not provided
+  start_date: string      // YYYY-MM-DD
+  end_date: string        // YYYY-MM-DD
+  traveler_count: number
+  budget_total: string    // string in form, parsed to number | null on submit
+  currency: string
 }
 
 export interface Itinerary {
