@@ -185,6 +185,45 @@ CREATE TRIGGER trg_trips_updated_at
 
 ---
 
+## Data Integrity Rules
+
+These are invariants — rules that must always be true in the database. Claude Code must never violate these regardless of the step being implemented.
+
+**Rule 1 — Every authenticated user must always have a profiles row.**
+Profile creation happens in the auth callback immediately after login using upsert with `onConflict: 'id'`. Never rely on onboarding to create the row. Onboarding only updates an existing row.
+
+```typescript
+// In auth callback — runs on every login, safe to repeat
+await supabase.from('profiles').upsert({
+  id: user.id,
+  display_name: user.user_metadata.full_name,
+  avatar_url: user.user_metadata.avatar_url,
+  onboarded: false
+}, { onConflict: 'id' })  // no-op if row already exists
+```
+
+```typescript
+// In onboarding submit — updates existing row only
+await supabase.from('profiles').update({
+  travel_style: { pace, budget, interests },
+  preferences: { dietary },
+  onboarded: true
+}).eq('id', user.id)
+```
+
+**Rule 2 — Never assume a profiles row is complete.**
+Always handle the case where `travel_style` or `preferences` is an empty object `{}`. Use optional chaining and fallbacks everywhere:
+```typescript
+profile.travel_style?.pace ?? 'medium'
+profile.travel_style?.interests ?? []
+profile.preferences?.dietary ?? []
+```
+
+**Rule 3 — Trip must always belong to an existing profile.**
+The foreign key `trips.user_id → profiles.id` enforces this at the DB level. Never create a trip before confirming the profiles row exists.
+
+---
+
 ## AI Itinerary Generation
 
 ### The API Route
@@ -354,22 +393,24 @@ Work through these in sequence. Each step produces something usable.
 
 ### Step 2 — Auth ✅ Complete
 ```
-- [x] Supabase Auth with Google provider (configure in Supabase dashboard — manual step)
-- [x] lib/supabase/client.ts and server.ts (already complete from Step 1)
-- [x] /login page with Google button  (app/(auth)/login/page.tsx)
-- [x] Auth callback route  (app/(auth)/callback/route.ts)
-- [x] Middleware to protect all routes — unauthenticated → /login, authed on /login → /dashboard
-- [x] Root / now redirects: authed → /dashboard, unauthed → /login
-- [ ] Test: can log in, session persists on refresh  (requires Supabase Google OAuth configured)
+- [x] Supabase Auth with Google provider (configure in Supabase dashboard)
+- [x] lib/supabase/client.ts and server.ts
+- [x] /login page with Google button
+- [x] Auth callback route (/app/(auth)/callback/route.ts)
+- [x] Middleware to protect /app routes (redirect to /login if no session)
+- [x] Test: can log in, session persists on refresh
 ```
 
-### Step 3 — Onboarding
+### Step 3 — Onboarding ✅ Complete
 ```
-- [ ] /onboarding page with travel style quiz
-- [ ] 4 questions: pace, budget level, interests (multi-select), dietary restrictions
-- [ ] On submit: upsert to profiles table, set onboarded=true
-- [ ] Redirect logic: if !onboarded → /onboarding, else → /dashboard
-- [ ] Test: new user lands on quiz, returning user skips it
+- [x] /onboarding page with travel style quiz  (app/(app)/onboarding/page.tsx)
+- [x] 4 questions: pace (radio), budget (radio), interests (checkboxes), dietary (checkboxes)
+- [x] On submit: update profiles row — travel_style + preferences + onboarded=true
+- [x] Auth callback upserts profiles row on every login (ignoreDuplicates: true) — Edge Case 001 fix
+- [x] Callback redirect: !onboarded → /onboarding, onboarded → /dashboard
+- [x] Dashboard server-side guard: !profile?.onboarded → redirect /onboarding
+- [x] Minimal dashboard created  (app/(app)/dashboard/page.tsx) — name + "Plan a new trip" button
+- [x] Test: build passes, all routes compile cleanly
 ```
 
 ### Step 4 — Trip Creation
@@ -488,7 +529,7 @@ When the time comes to expand, split it like this:
 ---
 
 *Maintained by: Ando Engineering*  
-*Last updated: 2026-02-27 — Step 2 complete*
+*Last updated: 2026-02-27 — Steps 1, 2 & 3 complete*
 *Next review: When first 5 friends have used it on a real trip*
 
 ---
@@ -502,7 +543,180 @@ When the time comes to expand, split it like this:
 | Feb 2026 | Supabase client instead of GraphQL | GraphQL overhead not justified for single web client. Introduce GraphQL when React Native app is built and multiple clients need a shared API. |
 | Feb 2026 | Supabase Auth instead of Auth0 | Free tier sufficient. Same OAuth 2.0 standard. Swap to Auth0 only if enterprise SSO is needed. |
 | Feb 2026 | Synchronous OpenAI call instead of job queue | 5–15 second wait acceptable for 20 users. Add BullMQ queue when concurrent generation causes timeouts. |
-| Feb 2026 | `getUser()` not `getSession()` in middleware | `getSession()` trusts the client-side JWT without server verification. `getUser()` re-validates against Supabase on every request — required for security per Supabase docs. |
-| Feb 2026 | Login page is `'use client'` | `signInWithOAuth` must be called in the browser (needs `window.location.origin` for the redirect URL). No server action alternative here. |
-| Feb 2026 | Proxy creates its own Supabase client | `lib/supabase/server.ts` uses `next/headers` cookies() which is not available in proxy/middleware. Proxy client uses `NextRequest`/`NextResponse` cookies directly — different context, different client setup. |
-| Feb 2026 | `proxy.ts` not `middleware.ts` | Next.js 16 renamed the file convention from `middleware` to `proxy` and the export from `middleware()` to `proxy()`. Same API, different name. Run `npx @next/codemod@canary middleware-to-proxy .` if upgrading an existing codebase. |
+
+---
+
+## Bug & Edge Case Log
+
+A record of issues discovered, how we found them, the decision made, and why. Use this to understand past mistakes and avoid repeating them.
+
+---
+
+### Edge Case 001 — Profile row not created on first login
+**Date:** February 2026  
+**Discovered by:** Founder reviewing Supabase Table Editor after Step 2  
+**Stage discovered:** After Step 2 (Auth) was built, before Step 3 (Onboarding) ran  
+
+**What happened:**
+After completing Google OAuth login in Step 2, the founder checked the Supabase Table Editor and noticed `public.profiles` was empty. The original architecture assumed the onboarding quiz (Step 3) would create the profiles row on form submit. No code existed to create the row at login time.
+
+**Why it was missed:**
+The schema and onboarding logic were each designed correctly in isolation. The gap was at the boundary between them — the transition from `auth.users` (Supabase-managed) to `public.profiles` (our table) was never explicitly documented as a responsibility. The architect (Claude) designed each component without stress-testing the seams between them.
+
+**The risk if left unfixed:**
+A user could log in, close the browser before finishing onboarding, and return later with no profiles row. Any code that queries profiles and assumes a row exists would throw an error. The onboarding redirect check (`!onboarded → /onboarding`) would fail silently or crash instead of gracefully redirecting.
+
+**Decision made:**
+Split profile lifecycle into two distinct responsibilities:
+1. **Auth callback** — always creates the profiles row via upsert with `onConflict: 'id'` immediately after every login. Safe to run on repeat logins — no-op if row already exists.
+2. **Onboarding submit** — only updates the existing row with travel style, preferences, and `onboarded=true`. Never creates.
+
+This guarantees every authenticated user always has a profiles row regardless of whether they complete onboarding.
+
+**Why this approach over alternatives:**
+- Considered using a Supabase database trigger on `auth.users` insert to auto-create the profiles row. Rejected because triggers are invisible to the codebase — a future developer wouldn't know the row was being created there, making debugging harder.
+- Considered creating the row lazily on first dashboard load. Rejected because it spreads the responsibility across multiple places and still leaves gaps.
+- Chosen approach keeps the logic in one explicit place (auth callback), is readable, and is documented here and in Data Integrity Rules.
+
+**Fix applied:** Step 3 was already built before this was caught. A retroactive fix prompt was given to Claude Code to update the auth callback to add the upsert, and to update onboarding to only call update (not upsert). Data Integrity Rules section added to CLAUDE.md to prevent similar gaps in future steps.
+
+**Lesson:** Before building each step, explicitly map the data lifecycle at the boundaries — who creates each row, who updates it, and what happens if the user drops off mid-flow.
+
+---
+
+### Edge Case 007 — Dashboard accessible mid-session even if onboarded: false
+**Date:** February 2026  
+**Discovered by:** Founder testing manually — set onboarded: false in Supabase without logging out, dashboard still loaded  
+**Stage:** Discovered during Step 3 verification  
+
+**What happened:**
+The onboarding redirect check only runs in the auth callback at login time. Once a session is established, navigating directly to `/dashboard` bypasses the check entirely. A user who abandons onboarding mid-session, or whose profile is manually reset, can still access the dashboard with an incomplete profile.
+
+**The risk if left unfixed:**
+User reaches dashboard with empty `travel_style` and `preferences`. When they create a trip and generate an itinerary, the prompt falls back to all defaults — generic itinerary with no personalization. Worse, if any dashboard code assumes profile data exists, it could throw an error.
+
+**Decision made:**
+Add a server-side onboarding guard directly in `app/(app)/dashboard/page.tsx`. It fetches the profile using the server Supabase client before the page renders. If `onboarded: false` or profile is missing, it redirects to `/onboarding`. This runs on every dashboard load regardless of session state.
+
+```typescript
+// app/(app)/dashboard/page.tsx
+import { createServerClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+
+export default async function DashboardPage() {
+  const supabase = createServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) redirect('/login')
+  
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('onboarded')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile || !profile.onboarded) redirect('/onboarding')
+  
+  // safe to render dashboard
+}
+```
+
+**Why not handle this in middleware instead?**
+Middleware runs on every request and doesn't have easy access to database data — it only sees cookies and headers. Fetching the profile in middleware would add a Supabase round-trip to every single page load, including static assets. Keeping the check in the dashboard page itself keeps it targeted and efficient.
+
+**Fix applied:** Retroactive fix prompt given to Claude Code after Step 3 was built.
+
+**Lesson:** Auth callback guards protect the login flow. Page-level guards protect direct navigation. Both are needed. Any page that requires a complete profile should have its own server-side check.
+
+---
+
+### Edge Case 002 — OpenAI returns malformed or unexpected JSON
+**Date:** February 2026  
+**Discovered by:** Architect review before Step 5  
+**Stage:** Not yet built — catch before Step 5  
+
+**What happened:**
+The generation route has no error handling around the OpenAI response. `JSON.parse(completion.choices[0].message.content!).days` throws an uncaught exception if OpenAI times out, refuses the request, or returns anything other than valid JSON. The trip record exists in the database but no itinerary is ever saved, leaving the user on a broken page with no explanation.
+
+**The risk if left unfixed:**
+Silent failures that look like bugs to the user. No way to retry because the UI has no error state. No record in the database of what went wrong.
+
+**Decision made:**
+Wrap the entire OpenAI call and JSON parse in a try/catch. On failure, return a structured error response the UI can display. Add a `generation_status` field to the itinerary insert — values: `pending`, `complete`, `failed` — so the UI always knows what state it's in.
+
+**Fix:** Address in Step 5 before building the generation route.
+
+---
+
+### Edge Case 003 — User hits Regenerate while generation is already running
+**Date:** February 2026  
+**Discovered by:** Architect review before Step 5  
+**Stage:** Not yet built — catch before Step 5  
+
+**What happened:**
+The regenerate flow deactivates previous itineraries then inserts a new one. Two concurrent calls racing could result in both deactivating each other, or a second insert overwriting the first before it completes.
+
+**The risk if left unfixed:**
+Zero active itineraries for a trip, or a half-written itinerary displayed to the user.
+
+**Decision made:**
+Disable the Regenerate button immediately on click and re-enable only when the response returns (success or error). A simple `isGenerating` boolean in React state is sufficient at this scale. No server-side locking needed for 20 users.
+
+**Fix:** Address in Step 5 when building the Regenerate button.
+
+---
+
+### Edge Case 004 — Invalid trip dates crash the generation prompt
+**Date:** February 2026  
+**Discovered by:** Architect review before Step 4  
+**Stage:** Not yet built — catch before Step 4  
+
+**What happened:**
+No validation exists to ensure `end_date` is after `start_date`, or that the trip duration is reasonable. If `end_date` is before `start_date`, the days calculation returns 0 or negative. If the trip is 60+ days, the prompt is enormous and likely hits OpenAI's context limit.
+
+**The risk if left unfixed:**
+Nonsensical prompts sent to OpenAI, failed generations, or token limit errors with no user feedback.
+
+**Decision made:**
+Add client-side validation in the trip form:
+- `end_date` must be after `start_date`
+- Maximum trip duration of 21 days for this stage (keeps prompt size manageable)
+- Show inline error messages, do not allow form submission if invalid
+
+**Fix:** Address in Step 4 when building the trip creation form.
+
+---
+
+### Edge Case 005 — Vercel free tier 60-second timeout
+**Date:** February 2026  
+**Discovered by:** Architect review before Step 5  
+**Stage:** Not yet built — monitor in Step 5  
+
+**What happened:**
+Vercel serverless functions time out at 60 seconds on the free tier. OpenAI can take 15–30 seconds for longer itineraries. A 14-day trip on a slow OpenAI response risks hitting this limit. The function times out, Vercel returns a 504, and the trip is left in a broken state with no itinerary and no error recorded.
+
+**The risk if left unfixed:**
+Users on longer trips get silent failures. No way to detect or retry from the UI.
+
+**Decision made:**
+Cap trip duration at 14 days for now (also mitigates Edge Case 004). Add OpenAI timeout configuration of 45 seconds, leaving buffer before Vercel's limit. If we hit this in testing, upgrade to Vercel Pro (300s limit) before inviting friends. Add this to the graduation checklist.
+
+**Fix:** Cap enforced in Step 4 form validation. Timeout configured in Step 5.
+
+---
+
+### Edge Case 006 — Service role key bypasses RLS
+**Date:** February 2026  
+**Discovered by:** Architect review  
+**Stage:** Ongoing — audit every step  
+
+**What happened:**
+`SUPABASE_SERVICE_ROLE_KEY` bypasses RLS entirely by design — it's meant for admin operations only. If Claude Code accidentally uses the service role client in API routes instead of the regular server client, RLS stops protecting user data. Any user could potentially access any other user's trips.
+
+**The risk if left unfixed:**
+Complete data exposure. User A can read, modify, or delete User B's trips.
+
+**Decision made:**
+Service role client must only be used for operations that legitimately need to bypass RLS — none exist in this MVP. All API routes use the regular server client (`lib/supabase/server.ts`) which respects RLS. Add a code comment to the service role client file warning against use in API routes.
+
+**Fix:** Audit `lib/supabase/server.ts` and all API routes in Step 5 to confirm service role key is never used in request handlers.
