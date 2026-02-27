@@ -18,7 +18,41 @@ Everything in this plan is chosen to answer that question as fast as possible.
 
 ---
 
-## Guiding Rules for This Phase
+## Current Status
+> Last updated: February 2026  
+> Update this section at the start of every new chat session.
+
+**Build progress:**
+- ✅ Step 1 — Project Foundation complete and committed
+- ✅ Step 2 — Auth complete and committed (Google OAuth, middleware, session)
+- ✅ Step 3 — Onboarding complete and committed (quiz, profile upsert, dashboard guard)
+- 🔲 Step 4 — Trip Creation (next)
+- 🔲 Step 5 — AI Generation
+- 🔲 Step 6 — Polish, PWA & Invite Friends
+
+**Edge case status:**
+- ✅ Edge Case 001 — Profile row not created on login (fixed in Step 3)
+- ✅ Edge Case 007 — Dashboard accessible mid-session with onboarded: false (fixed in Step 3)
+- ⚠️ Edge Case 002 — OpenAI malformed JSON (fix in Step 5)
+- ⚠️ Edge Case 003 — Regenerate button double-tap race condition (fix in Step 5)
+- ⚠️ Edge Case 004 — Invalid trip dates (fix in Step 4)
+- ⚠️ Edge Case 005 — Vercel 60s timeout on long trips (fix in Step 4 + 5)
+- ⚠️ Edge Case 006 — Service role key bypasses RLS (audit in Step 5)
+
+**Immediate next actions:**
+1. Replace CLAUDE.md in project folder with latest version
+2. Commit Step 3 completion to git
+3. Start Step 4 — Trip Creation with date validation baked in from Edge Case 004
+
+**Key decisions already made — do not revisit:**
+- Web app (Next.js + Supabase) before React Native mobile app
+- PWA for friends stage, no App Store yet
+- Supabase client instead of GraphQL until mobile app is built
+- Synchronous OpenAI calls, no job queue until >50 concurrent users
+- Max trip duration 14 days (token limit + Vercel timeout protection)
+- Profile row created at login via upsert, onboarding only updates
+
+---
 
 1. **No over-engineering.** If a feature isn't needed to answer the core question, cut it.
 2. **Postgres schema is sacred.** Get the data model right. Everything else is throwaway.
@@ -401,16 +435,13 @@ Work through these in sequence. Each step produces something usable.
 - [x] Test: can log in, session persists on refresh
 ```
 
-### Step 3 — Onboarding ✅ Complete
+### Step 3 — Onboarding
 ```
-- [x] /onboarding page with travel style quiz  (app/(app)/onboarding/page.tsx)
-- [x] 4 questions: pace (radio), budget (radio), interests (checkboxes), dietary (checkboxes)
-- [x] On submit: update profiles row — travel_style + preferences + onboarded=true
-- [x] Auth callback upserts profiles row on every login (ignoreDuplicates: true) — Edge Case 001 fix
-- [x] Callback redirect: !onboarded → /onboarding, onboarded → /dashboard
-- [x] Dashboard server-side guard: !profile?.onboarded → redirect /onboarding
-- [x] Minimal dashboard created  (app/(app)/dashboard/page.tsx) — name + "Plan a new trip" button
-- [x] Test: build passes, all routes compile cleanly
+- [ ] /onboarding page with travel style quiz
+- [ ] 4 questions: pace, budget level, interests (multi-select), dietary restrictions
+- [ ] On submit: upsert to profiles table, set onboarded=true
+- [ ] Redirect logic: if !onboarded → /onboarding, else → /dashboard
+- [ ] Test: new user lands on quiz, returning user skips it
 ```
 
 ### Step 4 — Trip Creation
@@ -529,7 +560,7 @@ When the time comes to expand, split it like this:
 ---
 
 *Maintained by: Ando Engineering*  
-*Last updated: 2026-02-27 — Steps 1, 2 & 3 complete*
+*Last updated: February 2026 — Step 1 complete*  
 *Next review: When first 5 friends have used it on a real trip*
 
 ---
