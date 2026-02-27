@@ -1,9 +1,8 @@
 # CLAUDE.md — Ando MVP Build Plan
-**Architect:** Claude (Sonnet 4.6)
-**Version:** 1.1
-**Date:** February 2026
-**Stage:** Friends & Founder — 5–20 users
-**Last Progress Update:** 2026-02-26
+**Architect:** Claude (Sonnet 4.6)  
+**Version:** 1.0  
+**Date:** February 2026  
+**Stage:** Friends & Founder — 5–20 users  
 
 ---
 
@@ -26,6 +25,7 @@ Everything in this plan is chosen to answer that question as fast as possible.
 3. **One codebase, one deployment.** No microservices, no queues, no separate services.
 4. **Boring tech wins.** Next.js + Supabase + OpenAI. No exotic choices.
 5. **You are the support team.** Onboard friends personally. Their confusion is product feedback.
+6. **Maintain CLAUDE.md as a live document.** After each completed step: mark tasks complete with ✅, log any architectural decisions made with rationale, and update the last updated date. Never let it fall out of sync with the actual state of the project.
 
 ---
 
@@ -33,7 +33,7 @@ Everything in this plan is chosen to answer that question as fast as possible.
 
 | Layer | Choice | Why |
 |-------|--------|-----|
-| Framework | Next.js 16.1.6 (App Router) | Full-stack in one repo. API routes + frontend. Vercel deploy in minutes. |
+| Framework | Next.js 14 (App Router) | Full-stack in one repo. API routes + frontend. Vercel deploy in minutes. |
 | Database | Supabase (PostgreSQL) | Managed Postgres + auth + storage. Free tier covers this stage. Schema carries forward. |
 | Auth | Supabase Auth | Built-in. Social login (Google). No Auth0 cost at this scale. |
 | AI | OpenAI GPT-4o (direct API call) | No queue needed. `await openai.chat()` is fine for 20 users. |
@@ -342,25 +342,22 @@ Currency: ${trip.currency}`
 
 Work through these in sequence. Each step produces something usable.
 
-### Step 1 — Project Foundation ✅ COMPLETE
+### Step 1 — Project Foundation ✅ Complete
 ```
-- [x] npx create-next-app@latest ando --typescript --tailwind --app  (Next.js 16.1.6 / React 19)
-- [x] Install dependencies: @supabase/supabase-js @supabase/ssr openai @tanstack/react-query @sentry/nextjs
+- [x] npx create-next-app@latest ando --typescript --tailwind --app
+- [x] Install dependencies: @supabase/supabase-js @supabase/ssr openai @tanstack/react-query sentry
 - [x] Set up .env.local with Supabase + OpenAI keys
-- [x] Write supabase/migrations/001_initial_schema.sql
-- [x] lib/supabase/client.ts and server.ts
-- [x] lib/openai/client.ts and prompts.ts
-- [x] lib/types.ts
-- [ ] Run migration in Supabase dashboard
-- [ ] Verify Supabase RLS is working (test in Supabase dashboard)
-- [ ] Deploy empty app to Vercel — confirm CI/CD works from day one
+- [x] Run Supabase migration (001_initial_schema.sql)
+- [x] Verify Supabase RLS is working (test in Supabase dashboard)
+- [x] Deploy empty app to Vercel — confirm CI/CD works from day one
 ```
 
 ### Step 2 — Auth
 ```
 - [ ] Supabase Auth with Google provider (configure in Supabase dashboard)
-- [ ] /login page with Google button  (app/(auth)/login/page.tsx)
-- [ ] Auth callback route  (app/(auth)/callback/route.ts)
+- [ ] lib/supabase/client.ts and server.ts
+- [ ] /login page with Google button
+- [ ] Auth callback route (/app/(auth)/callback/route.ts)
 - [ ] Middleware to protect /app routes (redirect to /login if no session)
 - [ ] Test: can log in, session persists on refresh
 ```
@@ -376,7 +373,6 @@ Work through these in sequence. Each step produces something usable.
 
 ### Step 4 — Trip Creation
 ```
-- [ ] app/(app)/layout.tsx — app shell with nav + auth guard
 - [ ] /dashboard page showing trip list (empty state with CTA)
 - [ ] /trips/new form (destination, start_date, end_date, traveler_count, budget)
 - [ ] POST /api/trips route to create trip record
@@ -386,6 +382,7 @@ Work through these in sequence. Each step produces something usable.
 
 ### Step 5 — AI Generation (core feature)
 ```
+- [ ] lib/openai/client.ts and prompts.ts
 - [ ] POST /api/itineraries/generate route
 - [ ] Trigger generation automatically after trip creation
 - [ ] Loading state on /trips/[id] while generating
@@ -393,14 +390,20 @@ Work through these in sequence. Each step produces something usable.
 - [ ] Test: generate an itinerary for a real destination, verify output quality
 ```
 
-### Step 6 — Polish & Invite Friends
+### Step 6 — Polish, PWA & Invite Friends
 ```
 - [ ] Error handling (OpenAI timeout, failed generation → friendly message)
 - [ ] Regenerate button on itinerary view
-- [ ] Mobile-responsive layout check
+- [ ] Mobile-responsive layout (test on iPhone Safari + Android Chrome)
 - [ ] Sentry error tracking wired up
-- [ ] Share link to /trips/[id] (read-only view for non-owners — future, but note it)
-- [ ] Invite 3–5 friends, watch them use it, take notes
+- [ ] PWA setup — add to home screen support:
+      - [ ] Create public/manifest.json (app name, icons, theme color)
+      - [ ] Add <link rel="manifest"> to app/layout.tsx
+      - [ ] Create 192x192 and 512x512 app icons (public/icons/)
+      - [ ] Set viewport meta tag for mobile fullscreen feel
+      - [ ] Test: open on iPhone Safari → Share → Add to Home Screen → launches fullscreen
+- [ ] Share link to /trips/[id] (send to friends to preview their itinerary)
+- [ ] Invite 3–5 friends via link, watch them use it, take notes
 ```
 
 ---
@@ -432,7 +435,8 @@ These are real features but they do not belong in this version:
 | Push notifications | Email works for now | When async generation is introduced |
 | Booking links | Distraction from core value | Phase 2 |
 | Social features | Not needed to validate core | Phase 3 |
-| Mobile app (React Native) | Web works on mobile browsers | When retention data justifies the investment |
+| Mobile app (React Native) | PWA covers friends stage; native app when App Store presence justified | When retention data justifies the investment |
+| GraphQL API | Supabase client is sufficient for web; GraphQL added when React Native mobile app is built | When React Native mobile app is introduced |
 | Fine-tuned model | GPT-4o is good enough to validate | When you hit $500+/month in LLM costs |
 
 ---
@@ -483,5 +487,17 @@ When the time comes to expand, split it like this:
 ---
 
 *Maintained by: Ando Engineering*  
-*Last updated: 2026-02-26*
+*Last updated: February 2026 — Step 1 complete*  
 *Next review: When first 5 friends have used it on a real trip*
+
+---
+
+## Architecture Decisions Log
+
+| Date | Decision | Rationale |
+|------|----------|-----------|
+| Feb 2026 | Web app (Next.js) before React Native | Faster to ship, easier to iterate, web familiar. Friends can use via browser or Add to Home Screen. |
+| Feb 2026 | PWA instead of native app for friends stage | No App Store friction. Friends get home screen icon via Safari/Chrome share sheet. Feels like an app. |
+| Feb 2026 | Supabase client instead of GraphQL | GraphQL overhead not justified for single web client. Introduce GraphQL when React Native app is built and multiple clients need a shared API. |
+| Feb 2026 | Supabase Auth instead of Auth0 | Free tier sufficient. Same OAuth 2.0 standard. Swap to Auth0 only if enterprise SSO is needed. |
+| Feb 2026 | Synchronous OpenAI call instead of job queue | 5–15 second wait acceptable for 20 users. Add BullMQ queue when concurrent generation causes timeouts. |
