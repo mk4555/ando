@@ -352,14 +352,15 @@ Work through these in sequence. Each step produces something usable.
 - [x] Deploy empty app to Vercel — confirm CI/CD works from day one
 ```
 
-### Step 2 — Auth
+### Step 2 — Auth ✅ Complete
 ```
-- [ ] Supabase Auth with Google provider (configure in Supabase dashboard)
-- [ ] lib/supabase/client.ts and server.ts
-- [ ] /login page with Google button
-- [ ] Auth callback route (/app/(auth)/callback/route.ts)
-- [ ] Middleware to protect /app routes (redirect to /login if no session)
-- [ ] Test: can log in, session persists on refresh
+- [x] Supabase Auth with Google provider (configure in Supabase dashboard — manual step)
+- [x] lib/supabase/client.ts and server.ts (already complete from Step 1)
+- [x] /login page with Google button  (app/(auth)/login/page.tsx)
+- [x] Auth callback route  (app/(auth)/callback/route.ts)
+- [x] Middleware to protect all routes — unauthenticated → /login, authed on /login → /dashboard
+- [x] Root / now redirects: authed → /dashboard, unauthed → /login
+- [ ] Test: can log in, session persists on refresh  (requires Supabase Google OAuth configured)
 ```
 
 ### Step 3 — Onboarding
@@ -487,7 +488,7 @@ When the time comes to expand, split it like this:
 ---
 
 *Maintained by: Ando Engineering*  
-*Last updated: February 2026 — Step 1 complete*  
+*Last updated: 2026-02-27 — Step 2 complete*
 *Next review: When first 5 friends have used it on a real trip*
 
 ---
@@ -501,3 +502,7 @@ When the time comes to expand, split it like this:
 | Feb 2026 | Supabase client instead of GraphQL | GraphQL overhead not justified for single web client. Introduce GraphQL when React Native app is built and multiple clients need a shared API. |
 | Feb 2026 | Supabase Auth instead of Auth0 | Free tier sufficient. Same OAuth 2.0 standard. Swap to Auth0 only if enterprise SSO is needed. |
 | Feb 2026 | Synchronous OpenAI call instead of job queue | 5–15 second wait acceptable for 20 users. Add BullMQ queue when concurrent generation causes timeouts. |
+| Feb 2026 | `getUser()` not `getSession()` in middleware | `getSession()` trusts the client-side JWT without server verification. `getUser()` re-validates against Supabase on every request — required for security per Supabase docs. |
+| Feb 2026 | Login page is `'use client'` | `signInWithOAuth` must be called in the browser (needs `window.location.origin` for the redirect URL). No server action alternative here. |
+| Feb 2026 | Proxy creates its own Supabase client | `lib/supabase/server.ts` uses `next/headers` cookies() which is not available in proxy/middleware. Proxy client uses `NextRequest`/`NextResponse` cookies directly — different context, different client setup. |
+| Feb 2026 | `proxy.ts` not `middleware.ts` | Next.js 16 renamed the file convention from `middleware` to `proxy` and the export from `middleware()` to `proxy()`. Same API, different name. Run `npx @next/codemod@canary middleware-to-proxy .` if upgrading an existing codebase. |
