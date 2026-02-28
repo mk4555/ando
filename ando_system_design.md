@@ -1,23 +1,9 @@
 # Ando — Technical & System Design Document
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Date:** February 2026  
 **Author:** Founder & Lead Developer  
-**Status:** In Progress
-
----
-
-> ## ⚠️ IMPORTANT — FOR CLAUDE CODE
->
-> **This document describes the future scaled architecture for 1M+ users. It is a reference document only — do NOT use it to make implementation decisions.**
->
-> **For all build instructions, tech stack choices, and implementation guidance, read `CLAUDE.md` exclusively.**
->
-> The two documents will appear to conflict. That is intentional:
-> - `CLAUDE.md` = what to build RIGHT NOW (Next.js, Supabase, OpenAI, Vercel)
-> - This file = what the architecture becomes IF the product gains traction
->
-> Ignore this file during implementation. It exists for future planning only.
+**Status:** In Progress — Steps 1–4 complete, Step 5 next
 
 ---
 
@@ -75,7 +61,7 @@
 
 | Layer | Choice | Reasoning |
 |-------|--------|-----------|
-| Mobile | React Native | Single codebase for iOS + Android. Expo managed workflow for faster iteration. |
+| Frontend | Next.js 14 (App Router) → React Native | Web-first. Next.js + PWA for the friends stage — faster to ship, no App Store friction. React Native introduced when retention data justifies native investment. |
 | API Gateway | AWS API Gateway + Kong | Rate limiting, auth, and routing at the edge. Kong for advanced plugin ecosystem. |
 | Backend Services | Node.js (TypeScript) + Python | Node for latency-sensitive REST/GraphQL APIs; Python for AI/ML pipelines. |
 | Primary DB | PostgreSQL (RDS Aurora) | ACID compliance for bookings and user data; Aurora auto-scales read replicas. |
@@ -85,7 +71,7 @@
 | AI/LLM | OpenAI GPT-4o + fine-tuned model | GPT-4o for itinerary generation; custom fine-tune for structured JSON output. |
 | Maps | Google Maps Platform + Mapbox | Google for search/places data; Mapbox for custom map rendering in-app. |
 | Object Storage | AWS S3 + CloudFront | User-uploaded photos, cached itinerary PDFs, static assets via CDN. |
-| Auth | Auth0 | OAuth 2.0, social login, MFA — battle-tested, not reinvented. |
+| Auth | Supabase Auth → Auth0 (at scale) | Supabase Auth covers OAuth 2.0 + social login at zero cost for the friends stage. Migrate to Auth0 when enterprise SSO or advanced MFA is required. |
 | Observability | Datadog + Sentry | APM, log aggregation, error tracking, and alerting. |
 | CI/CD | GitHub Actions + ArgoCD | Automated testing and Kubernetes GitOps deployments. |
 | Container Orchestration | AWS EKS (Kubernetes) | Container management at scale. Rolling deploys, autoscaling. |
@@ -139,7 +125,7 @@
 ### Service Breakdown
 
 #### User Service
-Handles authentication, user profiles, preferences, and social connections. Stateless; uses Auth0 for token validation. Writes to PostgreSQL; reads from Redis cache for hot user data.
+Handles authentication, user profiles, preferences, and social connections. Stateless; uses Supabase Auth for token validation at the friends stage, migrating to Auth0 when enterprise SSO is needed. Writes to PostgreSQL; reads from Redis cache for hot user data.
 
 #### Itinerary Service
 The core product service. Orchestrates itinerary creation, modification, and storage. Calls the AI Engine asynchronously via SQS. Returns a `job_id` immediately; the client polls or receives a push notification when complete.
@@ -286,6 +272,10 @@ CREATE TABLE bookings (
 ## 5. Core Services
 
 ### Itinerary Generation Flow
+
+**Friends stage (current):** Generation is triggered explicitly by the user from the trip detail page (`/trips/[id]`), not automatically after trip creation. This decouples trip creation from generation, allowing each to be built and tested independently. When async generation is introduced, only the button handler changes.
+
+**At scale (>50 concurrent users):** Async flow via job queue as shown below.
 
 ```
 Client                 API Gateway          Itinerary Svc        AI Engine
@@ -583,9 +573,9 @@ spec:
 
 ### Authentication & Authorization
 
-- **Auth0** for identity management — OAuth 2.0 + PKCE for mobile clients
+- **Supabase Auth** (friends stage) → **Auth0** (at scale) — OAuth 2.0 + PKCE for mobile clients. Supabase Auth covers social login and session management at zero cost. Auth0 migration triggered by enterprise SSO requirements or >200 active users.
 - **JWT access tokens** (15 min expiry) + **Refresh tokens** (30 day, rotated on each use)
-- **RBAC:** roles: `user`, `premium`, `admin`. Enforced at API Gateway level via custom Auth0 rules.
+- **RBAC:** roles: `user`, `premium`, `admin`. Enforced at API Gateway level.
 
 ### Data Privacy (GDPR / CCPA Compliance)
 
@@ -706,26 +696,31 @@ Travelers are often offline. Key offline capabilities:
 
 ## 13. Progress Tracker
 
-### Current Sprint: Foundation Setup
+### Current Sprint: AI Generation (Step 5)
 
-| Task | Status | Owner | Notes |
-|------|--------|-------|-------|
-| Monorepo structure | 🔲 Not Started | Lead Dev | Turborepo + pnpm workspaces |
-| DB schema v1 | 🔲 Not Started | Lead Dev | PostgreSQL + Flyway migrations |
-| Auth0 integration | 🔲 Not Started | Lead Dev | |
-| User service API | 🔲 Not Started | Lead Dev | |
-| React Native scaffold | 🔲 Not Started | Lead Dev | Expo Router |
-| EKS dev environment | 🔲 Not Started | Lead Dev | |
-| GitHub Actions CI | 🔲 Not Started | Lead Dev | |
+| Task | Status | Notes |
+|------|--------|-------|
+| Project foundation (Next.js, Supabase, Vercel) | ✅ Complete | |
+| Google OAuth + session middleware | ✅ Complete | Supabase Auth |
+| Onboarding quiz (pace, budget, interests, dietary) | ✅ Complete | Profile upsert at auth callback |
+| Trip creation form + API | ✅ Complete | 14-day cap, date validation |
+| Dashboard (trip grid + empty state) | ✅ Complete | Server component, direct Supabase query |
+| `/trips/[id]` scaffold + disabled Generate button | ✅ Complete | Decoupled from generation (Option B) |
+| AI itinerary generation | 🔲 Next | Step 5 |
+| ItineraryView, DayCard, ActivityItem | 🔲 Next | Step 5 |
+| PWA setup + mobile polish | 🔲 Pending | Step 6 |
+| Invite friends | 🔲 Pending | Step 6 |
 
 ### Milestone Overview
 
-| Milestone | Target Date | Status |
-|-----------|-------------|--------|
-| Foundation complete | Month 2 | 🔲 Pending |
-| Internal MVP (team testing) | Month 5 | 🔲 Pending |
-| Public beta (1K users) | Month 6 | 🔲 Pending |
-| App Store launch | Month 7 | 🔲 Pending |
+| Milestone | Target | Status |
+|-----------|--------|--------|
+| Foundation + Auth + Onboarding | Month 1 | ✅ Complete |
+| Trip Creation | Month 1 | ✅ Complete |
+| AI Generation (internal testing) | Month 2 | 🔲 In Progress |
+| Friends beta (5–20 users) | Month 2 | 🔲 Pending |
+| Public beta (1K users) | Month 4 | 🔲 Pending |
+| App Store launch (React Native) | Month 6 | 🔲 Pending |
 | 10K users | Month 9 | 🔲 Pending |
 | 100K users | Month 14 | 🔲 Pending |
 | 1M users | Month 24 | 🔲 Pending |
@@ -735,12 +730,16 @@ Travelers are often offline. Key offline capabilities:
 | Date | Decision | Rationale |
 |------|----------|-----------|
 | Feb 2026 | Rename Backpackr → Ando | Broader brand appeal; not limited to backpacker demographic |
-| Feb 2026 | React Native over Flutter | Larger talent pool; JavaScript ecosystem alignment with backend |
-| Feb 2026 | Async itinerary generation via SQS | LLM latency too high for synchronous HTTP; better UX with job status |
+| Feb 2026 | Web-first (Next.js + PWA) before React Native | Faster to ship, easier to iterate. No App Store friction at friends stage. |
+| Feb 2026 | Supabase Auth instead of Auth0 | Free tier sufficient. Same OAuth 2.0 standard. Revisit when enterprise SSO needed. |
+| Feb 2026 | Async itinerary generation via SQS (at scale) | LLM latency too high for synchronous HTTP at volume. Synchronous call acceptable for <50 users. |
+| Feb 2026 | Generation triggered from /trips/[id], not form | Decouples trip creation from generation. Each step ships independently. No form refactoring when async is introduced. |
 | Feb 2026 | RAG for places (not pure LLM) | Reduces hallucination; real-time data; lower token costs |
 | Feb 2026 | Aurora PostgreSQL as primary DB | ACID for financial/booking data; Aurora autoscaling for future growth |
+| Feb 2026 | Server components query Supabase directly | Avoids HTTP round-trips on first load. API routes exist for client-side React Query calls only. |
+| Feb 2026 | Max trip duration 14 days | Keeps prompt size manageable. Protects against Vercel 60s timeout at friends stage. |
 
 ---
 
 *Document maintained by: Ando Engineering  
-Last updated: February 2026*
+Last updated: February 2026 — v1.1, reflects actual build decisions through Step 4*

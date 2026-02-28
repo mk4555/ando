@@ -1,6 +1,9 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createServerClient } from '@/lib/supabase/server'
+import ItinerarySection from '@/components/itinerary/ItinerarySection'
+import ShareButton from '@/components/trip/ShareButton'
+import type { Itinerary } from '@/lib/types'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
@@ -29,6 +32,14 @@ export default async function TripPage({
 
   // Redirect if trip not found or doesn't belong to this user
   if (!trip || trip.user_id !== user.id) redirect('/dashboard')
+
+  // Fetch the active itinerary if one exists
+  const { data: itinerary } = await supabase
+    .from('itineraries')
+    .select('*')
+    .eq('trip_id', id)
+    .eq('is_active', true)
+    .maybeSingle()
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -67,18 +78,20 @@ export default async function TripPage({
           </div>
         </div>
 
-        {/* Itinerary section — placeholder until Step 5 wires up generation */}
-        <div className="mt-10 rounded-xl border border-stone-200 bg-white p-8 text-center">
-          <p className="text-stone-500">
-            Your itinerary will appear here once generated.
+        <div className="mt-10">
+          <ItinerarySection trip={trip} itinerary={itinerary as Itinerary | null} />
+        </div>
+
+        {/* Share link */}
+        <div className="mt-10 border-t border-stone-100 pt-6">
+          <p className="text-xs text-stone-400">
+            Anyone with the link can view this itinerary in read-only mode.
           </p>
-          <button
-            disabled
-            className="mt-6 cursor-not-allowed rounded-lg bg-stone-900 px-6 py-3 text-sm font-medium text-white opacity-40"
-          >
-            Generate Itinerary
-          </button>
-          <p className="mt-3 text-xs text-stone-400">Coming in the next update.</p>
+          <div className="mt-2">
+            <ShareButton
+              url={`${process.env.NEXT_PUBLIC_APP_URL}/shared/${trip.share_token}`}
+            />
+          </div>
         </div>
       </div>
     </div>

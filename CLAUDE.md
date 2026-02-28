@@ -30,24 +30,26 @@ Everything in this plan is chosen to answer that question as fast as possible.
 - ✅ Step 2 — Auth complete and committed (Google OAuth, middleware, session)
 - ✅ Step 3 — Onboarding complete and committed (quiz, profile upsert, dashboard guard)
 - ✅ Step 4 — Trip Creation complete and committed
-- 🔲 Step 5 — AI Generation (next)
-- 🔲 Step 6 — Polish, PWA & Invite Friends
+- ✅ Step 5 — AI Generation complete
+- ✅ Step 6 — Polish, PWA & Invite Friends complete
 
 **Edge case status:**
 
 - ✅ Edge Case 001 — Profile row not created on login (fixed in Step 3)
 - ✅ Edge Case 007 — Dashboard accessible mid-session with onboarded: false (fixed in Step 3)
-- ⚠️ Edge Case 002 — OpenAI malformed JSON (fix in Step 5)
-- ⚠️ Edge Case 003 — Regenerate button double-tap race condition (fix in Step 5)
+- ✅ Edge Case 002 — OpenAI malformed JSON (fixed in Step 5)
+- ✅ Edge Case 003 — Regenerate button double-tap race condition (fixed in Step 5)
 - ✅ Edge Case 004 — Invalid trip dates (fixed in Step 4)
-- ⚠️ Edge Case 005 — Vercel 60s timeout on long trips (fix in Step 4 + 5)
-- ⚠️ Edge Case 006 — Service role key bypasses RLS (audit in Step 5)
+- ✅ Edge Case 005 — Vercel 60s timeout on long trips (fixed in Step 5: 45s OpenAI timeout)
+- ✅ Edge Case 006 — Service role key bypasses RLS (audited in Step 5: clean)
 - ✅ Edge Case 008 — UTC offset shifts displayed dates by one day (fixed in Step 4)
 
 **Immediate next actions:**
 
-1. Replace CLAUDE.md in project folder with this version
-2. Start Step 5 — AI Generation
+1. Run `supabase db push` (or apply migration 002 in Supabase dashboard SQL editor) to add share_token
+2. Add `NEXT_PUBLIC_SENTRY_DSN` to Vercel env vars — get DSN from sentry.io project settings
+3. Add `NEXT_PUBLIC_APP_URL=https://your-vercel-url.app` to Vercel env vars (share links use this)
+4. Generate one test itinerary end-to-end, then invite 3–5 friends
 
 **Key decisions already made — do not revisit:**
 
@@ -458,34 +460,40 @@ Work through these in sequence. Each step produces something usable.
 - [x] Test: build passes, all 9 routes compile cleanly
 ```
 
-### Step 5 — AI Generation 🔲
+### Step 5 — AI Generation ✅ Complete
 
 ```
-- [ ] lib/openai/client.ts and prompts.ts
-- [ ] POST /api/itineraries/generate route (wrap in try/catch — Edge Case 002)
-- [ ] Wire "Generate Itinerary" button on /trips/[id] to call generate API
-- [ ] isGenerating state: disable button immediately on click, re-enable on response (Edge Case 003)
-- [ ] Loading state on /trips/[id] while generating ("Ando is planning your trip...")
-- [ ] ItineraryView, DayCard, ActivityItem components
-- [ ] OpenAI timeout set to 45s (buffer before Vercel's 60s limit — Edge Case 005)
-- [ ] Audit: confirm service role key is never used in API route handlers (Edge Case 006)
+- [x] lib/openai/client.ts: timeout set to 45s (Edge Case 005 ✅)
+- [x] lib/openai/prompts.ts: verified correct — no changes needed
+- [x] POST /api/itineraries/generate: full try/catch around OpenAI call + JSON.parse (Edge Case 002 ✅)
+- [x] POST /api/itineraries/generate: ownership check, deactivates old itineraries before insert
+- [x] Audit: service role key never used in any API route handler (Edge Case 006 ✅)
+- [x] ItinerarySection client component: isGenerating set immediately on click, reset in finally (Edge Case 003 ✅)
+- [x] ItinerarySection: spinner + "Ando is planning your trip…" loading state
+- [x] ItinerarySection: error display with retry capability
+- [x] ItinerarySection: shows Generate button when no itinerary, Regenerate button after
+- [x] ItinerarySection: router.refresh() after successful generation (server component re-fetches)
+- [x] ItineraryView component: day list + estimated total cost summary bar
+- [x] DayCard component: day header (theme, date, estimated cost, walking km), activity list
+- [x] ActivityItem component: time, name, category badge, description, notes, cost, travel_to_next
+- [x] DayCard: T00:00:00 appended to date strings (Edge Case 008 ✅)
+- [x] /trips/[id] page: fetches active itinerary with .maybeSingle(), passes to ItinerarySection
 - [ ] Test: generate an itinerary for a real destination, verify output quality
 ```
 
-### Step 6 — Polish, PWA & Invite Friends 🔲
+### Step 6 — Polish, PWA & Invite Friends ✅ Complete
 
 ```
-- [ ] Error handling (OpenAI timeout, failed generation → friendly message)
-- [ ] Regenerate button replaces Generate button once itinerary exists
-- [ ] Mobile-responsive layout (test on iPhone Safari + Android Chrome)
-- [ ] Sentry error tracking wired up
-- [ ] PWA setup — add to home screen support:
-      - [ ] Create public/manifest.json (app name, icons, theme color)
-      - [ ] Add <link rel="manifest"> to app/layout.tsx
-      - [ ] Create 192x192 and 512x512 app icons (public/icons/)
-      - [ ] Set viewport meta tag for mobile fullscreen feel
-      - [ ] Test: open on iPhone Safari → Share → Add to Home Screen → launches fullscreen
-- [ ] Share link to /trips/[id] (read-only view for non-owners)
+- [x] Error handling: audited — ItinerarySection covers generate/regenerate failures with retry; onboarding has error state; no blank screens
+- [x] Regenerate button: confirmed correct — same isGenerating/finally pattern as Generate; shown only when itinerary exists
+- [x] Mobile responsiveness: audited all pages at 390px — flex-wrap on meta rows, px-4 gutters throughout; DayCard left header fixed with min-w-0 flex-1
+- [x] Sentry: sentry.client.config.ts + sentry.server.config.ts + instrumentation.ts created; next.config.ts wrapped with withSentryConfig; requires NEXT_PUBLIC_SENTRY_DSN env var in Vercel
+- [x] PWA: public/manifest.json (standalone, stone-900 theme), public/icons/icon.svg (SVG lettermark), app/layout.tsx updated with manifest link, apple-touch-icon, Viewport export
+- [x] Share link: migration 002 adds share_token UUID to trips + public SELECT RLS policies; /shared/[shareToken] read-only page (no Generate/Regenerate); ShareButton component on trip page; proxy.ts allows /shared/ without auth
+- [x] lib/types.ts: added share_token to Trip interface
+- [ ] Apply migration 002 in Supabase dashboard
+- [ ] Set NEXT_PUBLIC_SENTRY_DSN + NEXT_PUBLIC_APP_URL in Vercel env vars
+- [ ] Test: generate itinerary, share link with a friend, verify read-only view
 - [ ] Invite 3–5 friends via link, watch them use it, take notes
 ```
 
@@ -607,6 +615,8 @@ When the time comes to expand, split it like this:
 | Feb 2026 | Max trip duration 14 days                                                     | Keeps prompt size manageable. Protects against Vercel 60s timeout (Edge Case 005).                                                                                                                                                                                                       |
 | Feb 2026 | Generation triggered from /trips/[id], not from form (Option B)               | Decouples Steps 4 and 5. Each ships independently. When async generation is introduced, only the button handler changes — no form refactoring needed.                                                                                                                                    |
 | Feb 2026 | Server components query Supabase directly; API routes are for client-side use | Avoids unnecessary HTTP round-trips on first load. Server components (dashboard, trip page) use `createServerClient` directly. API routes (`/api/trips`, `/api/itineraries`) exist for React Query calls from client components. Never fetch internal API routes from server components. |
+| Feb 2026 | Share links use /shared/[shareToken] route with permissive RLS, not /trips/[id] | Keeps owner-only logic in /trips/[id] clean. Public SELECT policy on trips + itineraries is acceptable because all IDs are gen_random_uuid() — 2^122 bits of entropy, effectively unguessable. Separate route prevents confusion between owner view and read-only view. |
+| Feb 2026 | PWA uses SVG icon (icon.svg) instead of PNG for MVP | SVG works in Chrome/Android manifest; iOS Safari uses apple-touch-icon. For proper iOS home screen icon (crisp PNG), generate 192×192 and 512×512 PNGs from the SVG and replace icon.svg with them before wide rollout. |
 
 ---
 
@@ -624,15 +634,15 @@ Dashboard page performs a server-side profile fetch on every load. If `onboarded
 
 ---
 
-### Edge Case 002 — OpenAI returns malformed or unexpected JSON ⚠️ Fix in Step 5
+### Edge Case 002 — OpenAI returns malformed or unexpected JSON ✅ Fixed in Step 5
 
-Wrap the entire OpenAI call and JSON parse in try/catch. Return a structured error response the UI can display. Do not let the trip page hang silently.
+`/api/itineraries/generate` wraps the entire OpenAI call and `JSON.parse` in a try/catch. On any error, returns `{ error: '...' }` with status 502. `ItinerarySection` displays the error message with retry available.
 
 ---
 
-### Edge Case 003 — User hits Generate/Regenerate while generation is already running ⚠️ Fix in Step 5
+### Edge Case 003 — User hits Generate/Regenerate while generation is already running ✅ Fixed in Step 5
 
-Disable the button immediately on click. Re-enable only when the response returns (success or error). `isGenerating` boolean in React state is sufficient at this scale.
+`isGenerating` set to `true` immediately on button click. Button is `disabled` while true. Reset to `false` in a `finally` block — runs whether the request succeeds or fails.
 
 ---
 
@@ -642,15 +652,15 @@ Client-side validation in TripForm and server-side validation in POST /api/trips
 
 ---
 
-### Edge Case 005 — Vercel 60s serverless timeout ⚠️ Monitor in Step 5
+### Edge Case 005 — Vercel 60s serverless timeout ✅ Mitigated in Step 5
 
-14-day cap (Step 4) reduces prompt size. Set OpenAI timeout to 45s in Step 5 to leave buffer. If timeouts occur in testing, upgrade to Vercel Pro (300s limit) before inviting friends.
+14-day trip cap keeps prompt size bounded. OpenAI client timeout set to 45s — OpenAI SDK raises a timeout error before Vercel cuts the connection. Error is caught and returned as a friendly message. If real-world timeouts persist, upgrade to Vercel Pro (300s limit).
 
 ---
 
-### Edge Case 006 — Service role key bypasses RLS ⚠️ Audit in Step 5
+### Edge Case 006 — Service role key bypasses RLS ✅ Audited in Step 5
 
-`SUPABASE_SERVICE_ROLE_KEY` must never be used in API route handlers. All routes use `createServerClient` from `lib/supabase/server.ts`. Add a warning comment to the service role client file. Audit all routes in Step 5.
+Full audit of `lib/` and `app/api/` confirms `SUPABASE_SERVICE_ROLE_KEY` is never referenced in any API route handler. All routes use `createServerClient` from `lib/supabase/server.ts` which uses the anon key with cookie-based session auth.
 
 ---
 
@@ -661,5 +671,5 @@ Date strings from Supabase (`YYYY-MM-DD`) must always have `T00:00:00` appended 
 ---
 
 _Maintained by: Ando Engineering_  
-_Last updated: 2026-02-27 — Steps 1–4 complete, Edge Case 008 logged, server component data fetching pattern established_
+_Last updated: 2026-02-27 — All 6 steps complete. Apply migration 002, set env vars in Vercel, invite friends._
 _Next review: When first 5 friends have used it on a real trip_

@@ -37,6 +37,7 @@ export async function proxy(request: NextRequest) {
   const isPublicRoute =
     pathname === '/login' ||
     pathname === '/callback' ||
+    pathname.startsWith('/shared/') ||
     pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
     pathname.match(/\.(ico|svg|png|jpg|jpeg|webp)$/)

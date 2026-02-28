@@ -35,6 +35,7 @@ export interface Trip {
   budget_total: number | null
   currency: string
   status: TripStatus
+  share_token: string
   metadata: Record<string, unknown>
   created_at: string
   updated_at: string
