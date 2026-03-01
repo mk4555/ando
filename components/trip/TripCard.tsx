@@ -1,4 +1,4 @@
-import Link from 'next/link'
+ï»¿import Link from 'next/link'
 import type { Trip } from '@/lib/types'
 import { formatTripDateRange } from '@/lib/date'
 
@@ -34,7 +34,7 @@ export default function TripCard({ trip }: TripCardProps) {
 
       <div className="mt-4 flex items-center gap-3 text-sm text-[var(--text-2)]">
         <span>{formatTripDateRange(trip.start_date, trip.end_date)}</span>
-        <span>·</span>
+        <span>-</span>
         <span>
           {trip.traveler_count} {trip.traveler_count === 1 ? 'traveler' : 'travelers'}
         </span>
@@ -42,3 +42,4 @@ export default function TripCard({ trip }: TripCardProps) {
     </Link>
   )
 }
+

@@ -50,7 +50,7 @@ export default function ActivityItem({ activity, currency }: Props) {
           <div className="mt-2 flex items-center gap-1.5 text-xs text-[var(--text-3)]">
             <span>→</span>
             <span>
-              {activity.travel_to_next.mode} · {activity.travel_to_next.duration_min} min
+              {activity.travel_to_next.mode} &middot; {activity.travel_to_next.duration_min} min
             </span>
           </div>
         )}

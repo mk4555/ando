@@ -168,7 +168,7 @@ export default async function LandingPage() {
         <p className={styles.tQuote}>
           I&apos;ve never felt so prepared for a trip — and it took me less than two minutes to plan it.
         </p>
-        <p className={styles.tAuthor}>Early tester · 7-day trip to Japan</p>
+        <p className={styles.tAuthor}>Early tester - 7-day trip to Japan</p>
       </div>
 
       {/* ── BOTTOM CTA ── */}

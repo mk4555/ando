@@ -50,13 +50,13 @@ export default async function ExplorePage() {
 
                 <div className="mt-4 flex items-center gap-3 text-sm text-[var(--text-2)]">
                   <span>{formatTripDateRange(trip.start_date, trip.end_date)}</span>
-                  <span>·</span>
+                  <span>&middot;</span>
                   <span>
                     {trip.traveler_count} {trip.traveler_count === 1 ? 'traveler' : 'travelers'}
                   </span>
                   {trip.budget_total && (
                     <>
-                      <span>·</span>
+                      <span>&middot;</span>
                       <span>{trip.currency} {Number(trip.budget_total).toLocaleString()}</span>
                     </>
                   )}

@@ -31,13 +31,13 @@ export default function TripHeaderSummary({
         <span>
           {formatTripDate(startDate)} - {formatTripDate(endDate)}
         </span>
-        <span>·</span>
+        <span>&middot;</span>
         <span>
           {travelerCount} {travelerCount === 1 ? 'traveler' : 'travelers'}
         </span>
         {budgetTotal && (
           <>
-            <span>·</span>
+            <span>&middot;</span>
             <span>
               {currency} {Number(budgetTotal).toLocaleString()}
             </span>
