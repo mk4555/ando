@@ -1,37 +1,39 @@
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { createServerClient } from '@/lib/supabase/server'
-import ItinerarySection from '@/components/itinerary/ItinerarySection'
-import ShareButton from '@/components/trip/ShareButton'
-import TripHeaderSummary from '@/components/trip/TripHeaderSummary'
-import PageShell from '@/components/ui/PageShell'
-import type { Itinerary } from '@/lib/types'
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { createServerClient } from "@/lib/supabase/server";
+import ItinerarySection from "@/components/itinerary/ItinerarySection";
+import ShareButton from "@/components/trip/ShareButton";
+import TripHeaderSummary from "@/components/trip/TripHeaderSummary";
+import PageShell from "@/components/ui/PageShell";
+import type { Itinerary } from "@/lib/types";
 
 export default async function TripPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }) {
-  const { id } = await params
-  const supabase = await createServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { id } = await params;
+  const supabase = await createServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!user) redirect('/login')
+  if (!user) redirect("/login");
 
   const { data: trip } = await supabase
-    .from('trips')
-    .select('*')
-    .eq('id', id)
-    .single()
+    .from("trips")
+    .select("*")
+    .eq("id", id)
+    .single();
 
-  if (!trip || trip.user_id !== user.id) redirect('/dashboard')
+  if (!trip || trip.user_id !== user.id) redirect("/dashboard");
 
   const { data: itinerary } = await supabase
-    .from('itineraries')
-    .select('*')
-    .eq('trip_id', id)
-    .eq('is_active', true)
-    .maybeSingle()
+    .from("itineraries")
+    .select("*")
+    .eq("trip_id", id)
+    .eq("is_active", true)
+    .maybeSingle();
 
   return (
     <PageShell maxWidth="2xl" paddingY="py-12">
@@ -39,7 +41,7 @@ export default async function TripPage({
         href="/dashboard"
         className="text-sm text-[var(--text-2)] hover:text-[var(--text)]"
       >
-        ? My trips
+        My trips
       </Link>
 
       <div className="mt-6">
@@ -55,7 +57,10 @@ export default async function TripPage({
       </div>
 
       <div className="mt-10">
-        <ItinerarySection trip={trip} itinerary={itinerary as Itinerary | null} />
+        <ItinerarySection
+          trip={trip}
+          itinerary={itinerary as Itinerary | null}
+        />
       </div>
 
       <div className="mt-10 border-t border-[var(--border)] pt-6">
@@ -69,5 +74,5 @@ export default async function TripPage({
         </div>
       </div>
     </PageShell>
-  )
+  );
 }

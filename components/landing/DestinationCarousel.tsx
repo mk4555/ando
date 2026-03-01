@@ -111,7 +111,7 @@ const StarIcon = () => (
 );
 
 export default function DestinationCarousel() {
-  const [emblaRef] = useEmblaCarousel({ loop: true, dragFree: true }, [
+  const [emblaRef] = useEmblaCarousel({ loop: true, dragFree: true, align: "start" }, [
     AutoScroll({ speed: 1, stopOnInteraction: false, stopOnMouseEnter: true }),
   ]);
 

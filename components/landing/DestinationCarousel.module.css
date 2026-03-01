@@ -34,14 +34,15 @@
 /* Embla container */
 .carouselTrack {
   display: flex;
-  padding: 4px 20px 16px;
+  margin-left: -12px;
+  padding: 4px 0 16px;
 }
 
 /* Embla slide wrapper */
 .slide {
   flex: 0 0 auto;
   min-width: 0;
-  padding-right: 12px;
+  padding-left: 12px;
 }
 
 /* Destination card — mobile size */
@@ -135,7 +136,7 @@
 /* ── Desktop overrides ── */
 @media (min-width: 769px) {
   .carouselTrack {
-    padding: 4px 48px 20px;
+    padding: 4px 0 20px;
   }
 
   .dcard {

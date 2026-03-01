@@ -179,6 +179,7 @@ export default async function LandingPage() {
         <p className={styles.ctaSub}>Free to start. No credit card required.</p>
         {isLoggedIn ? (
           <Link href="/dashboard" className={styles.gBtn}>
+            <span className={styles.gIconPlaceholder} aria-hidden="true" />
             Go to dashboard
           </Link>
         ) : (

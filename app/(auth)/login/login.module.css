@@ -360,6 +360,7 @@
 .gBtn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
   font-size: 15px;
@@ -373,11 +374,18 @@
   text-decoration: none;
   box-shadow: var(--shadow-sm);
   transition: border-color 0.2s, box-shadow 0.2s;
+  min-width: 230px;
 }
 
 .gBtn:hover {
   border-color: var(--accent);
   box-shadow: var(--shadow-md);
+}
+
+.gIconPlaceholder {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
 .ctaNote {
