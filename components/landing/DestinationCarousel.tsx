@@ -34,28 +34,28 @@ export default function DestinationCarousel() {
     const track = trackRef.current
     if (!track) return
 
-    // Clone all original children for seamless loop
-    const origCards = Array.from(track.children)
-    origCards.forEach(card => {
-      const clone = card.cloneNode(true) as Element
+    const original = Array.from(track.children) as HTMLElement[]
+    original.forEach(card => {
+      const clone = card.cloneNode(true) as HTMLElement
       clone.setAttribute('aria-hidden', 'true')
       track.appendChild(clone)
     })
 
-    let paused = false
-    let lastTime: number | null = null
+    const SPEED = 40 // px per second — adjust this single constant if speed feels wrong
     let rafId: number
+    let lastTs: number | null = null
+    let paused = false
 
-    function tick(ts: number) {
-      if (!lastTime) lastTime = ts
-      const dt = ts - lastTime
-      lastTime = ts
+    const tick = (ts: number) => {
+      if (!lastTs) lastTs = ts
+      const dt = (ts - lastTs) / 1000 // seconds
+      lastTs = ts
 
-      if (!paused) {
-        track!.scrollLeft += 0.5 * (dt / 16.67)
-        const half = track!.scrollWidth / 2
-        if (track!.scrollLeft >= half) {
-          track!.scrollLeft -= half
+      if (!paused && track.scrollWidth > 0) {
+        track.scrollLeft += SPEED * dt
+        const half = track.scrollWidth / 2
+        if (track.scrollLeft >= half) {
+          track.scrollLeft -= half
         }
       }
 
@@ -64,16 +64,17 @@ export default function DestinationCarousel() {
 
     rafId = requestAnimationFrame(tick)
 
-    // Pause/resume handlers — named for removeEventListener
-    function onMouseEnter() { paused = true }
-    function onMouseLeave() { paused = false; lastTime = null }
-    function onTouchStart() { paused = true }
-    function onTouchEnd() {
-      setTimeout(() => { paused = false; lastTime = null }, 1200)
+    const onEnter = () => { paused = true }
+    const onLeave = () => { paused = false; lastTs = null }
+    const onTouchStart = () => { paused = true }
+    let touchEndTimer: ReturnType<typeof setTimeout>
+    const onTouchEnd = () => {
+      clearTimeout(touchEndTimer)
+      touchEndTimer = setTimeout(() => { paused = false; lastTs = null }, 1200)
     }
 
-    track.addEventListener('mouseenter', onMouseEnter)
-    track.addEventListener('mouseleave', onMouseLeave)
+    track.addEventListener('mouseenter', onEnter)
+    track.addEventListener('mouseleave', onLeave)
     track.addEventListener('touchstart', onTouchStart, { passive: true })
     track.addEventListener('touchend', onTouchEnd, { passive: true })
 
@@ -82,39 +83,41 @@ export default function DestinationCarousel() {
     let dragStartX = 0
     let dragScrollStart = 0
 
-    function onMouseDown(e: MouseEvent) {
+    const onMouseDown = (e: MouseEvent) => {
       isDragging = true
       paused = true
       dragStartX = e.clientX
-      dragScrollStart = track!.scrollLeft
-      track!.classList.add(styles.isDragging)
+      dragScrollStart = track.scrollLeft
+      track.classList.add(styles.isDragging)
     }
-
-    function onWindowMouseMove(e: MouseEvent) {
+    const onMouseMove = (e: MouseEvent) => {
       if (!isDragging) return
-      track!.scrollLeft = dragScrollStart - (e.clientX - dragStartX)
+      track.scrollLeft = dragScrollStart - (e.clientX - dragStartX)
     }
-
-    function onWindowMouseUp() {
+    let dragEndTimer: ReturnType<typeof setTimeout>
+    const onMouseUp = () => {
       if (!isDragging) return
       isDragging = false
-      track!.classList.remove(styles.isDragging)
-      setTimeout(() => { paused = false; lastTime = null }, 800)
+      track.classList.remove(styles.isDragging)
+      clearTimeout(dragEndTimer)
+      dragEndTimer = setTimeout(() => { paused = false; lastTs = null }, 800)
     }
 
     track.addEventListener('mousedown', onMouseDown)
-    window.addEventListener('mousemove', onWindowMouseMove)
-    window.addEventListener('mouseup', onWindowMouseUp)
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
 
     return () => {
       cancelAnimationFrame(rafId)
-      track.removeEventListener('mouseenter', onMouseEnter)
-      track.removeEventListener('mouseleave', onMouseLeave)
+      clearTimeout(touchEndTimer)
+      clearTimeout(dragEndTimer)
+      track.removeEventListener('mouseenter', onEnter)
+      track.removeEventListener('mouseleave', onLeave)
       track.removeEventListener('touchstart', onTouchStart)
       track.removeEventListener('touchend', onTouchEnd)
       track.removeEventListener('mousedown', onMouseDown)
-      window.removeEventListener('mousemove', onWindowMouseMove)
-      window.removeEventListener('mouseup', onWindowMouseUp)
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
     }
   }, [])
 

@@ -1,0 +1,98 @@
+/* Mobile-first — default styles target ≤ 768px viewports.
+   Desktop enhancements use min-width: 769px only. */
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 56px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(248, 249, 251, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.logo {
+  font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.4px;
+  color: var(--text);
+  text-decoration: none;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: default;
+  padding: 0;
+}
+
+.logoAccent {
+  color: var(--accent);
+}
+
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Ghost link — hidden on mobile, visible on desktop */
+.navSignin {
+  display: none;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+  font-family: inherit;
+}
+
+.navSignin:hover {
+  color: var(--text);
+  background: var(--bg-subtle);
+}
+
+/* Filled CTA */
+.navCta {
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background: var(--cta);
+  border: none;
+  border-radius: 8px;
+  padding: 9px 20px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, transform 0.12s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.navCta:hover {
+  background: var(--cta-h);
+  transform: translateY(-1px);
+}
+
+.navCta:active {
+  transform: translateY(0);
+}
+
+/* ── DESKTOP OVERRIDES (min-width: 769px) ── */
+@media (min-width: 769px) {
+  .nav {
+    height: 64px;
+    padding: 0 48px;
+  }
+
+  .navSignin {
+    display: block;
+  }
+}
