@@ -89,3 +89,7 @@ NEXT_PUBLIC_APP_URL        # Used for share link construction
 ```
 
 Sentry config is in `.env.sentry-build-plugin` (auto-created by Sentry setup).
+
+### Critical Rules
+
+1. Always generate a Git commit message after code change is made.

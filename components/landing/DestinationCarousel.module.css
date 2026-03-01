@@ -26,23 +26,22 @@
   background: linear-gradient(to left, var(--bg) 20%, transparent);
 }
 
+/* Embla viewport — must have overflow: hidden */
+.carouselViewport {
+  overflow: hidden;
+}
+
+/* Embla container */
 .carouselTrack {
   display: flex;
-  gap: 12px;
   padding: 4px 20px 16px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  cursor: grab;
-  scroll-behavior: auto;
 }
 
-.carouselTrack::-webkit-scrollbar {
-  display: none;
-}
-
-.isDragging {
-  cursor: grabbing;
+/* Embla slide wrapper */
+.slide {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding-right: 12px;
 }
 
 /* Destination card — mobile size */
