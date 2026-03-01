@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ando — Design Reference v1.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* ── DUSK SLATE — locked palette ── */
+      --bg:        #F8F9FB;
+      --bg-subtle: #EEF1F6;
+      --bg-card:   #FFFFFF;
+      --border:    #DDE3ED;
+      --border-hi: #C8D2E0;
+      --text:      #1A2234;
+      --text-2:    #5A6B82;
+      --text-3:    #A4B0C0;
+      --accent:    #4A6FA5;
+      --accent-h:  #3A5C92;
+      --accent-s:  rgba(74,111,165,0.07);
+      /* CTA matches brand — Dusk Slate, darker shade for action weight */
+      --cta:       #3A5C92;
+      --cta-h:     #2B4C7E;
+      --cta-glow:  rgba(58,92,146,0.22);
+      --shadow-sm: 0 1px 4px rgba(26,34,52,0.06), 0 4px 16px rgba(26,34,52,0.06);
+      --shadow-md: 0 2px 8px rgba(26,34,52,0.06), 0 8px 32px rgba(26,34,52,0.10);
+      --shadow-lg: 0 4px 16px rgba(26,34,52,0.06), 0 20px 60px rgba(26,34,52,0.13);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    /*
+      Pattern: logo left / actions right.
+      Two distinct actions — Sign in (ghost) for returning users,
+      Get started (filled CTA) for new users.
+      No middle links — the hero CTA owns conversion on this page.
+      Stays sticky so the brand mark is always visible.
+    */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px;
+      height: 64px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(248, 249, 251, 0.92);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position: sticky; top: 0; z-index: 50;
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 500; letter-spacing: -0.4px;
+      color: var(--text); text-decoration: none;
+      flex-shrink: 0;
+    }
+    .logo span { color: var(--accent); }
+
+    /* Right cluster — sign in ghost + get started CTA */
+    .nav-actions {
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    /* Ghost — secondary action for returning users */
+    .nav-signin {
+      font-size: 14px; font-weight: 400; color: var(--text-2);
+      text-decoration: none; padding: 8px 14px; border-radius: 8px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-signin:hover { color: var(--text); background: var(--bg-subtle); }
+
+    /* Filled — primary action for new users */
+    .nav-cta {
+      font-size: 14px; font-weight: 500;
+      color: #fff; background: var(--cta);
+      border: none; border-radius: 8px;
+      padding: 9px 20px; text-decoration: none; cursor: pointer;
+      transition: background 0.15s, transform 0.12s;
+    }
+    .nav-cta:hover { background: var(--cta-h); transform: translateY(-1px); }
+    .nav-cta:active { transform: translateY(0); }
+
+    /* ── HERO ── */
+    .hero {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 96px 40px 80px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+
+    /* Subtle warm radial — adds depth without being a dark mode trick */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -120px; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 500px; border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(74,111,165,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 600; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--accent);
+      background: var(--accent-s); border: 1px solid rgba(74,111,165,0.18);
+      border-radius: 100px; padding: 5px 14px;
+      margin-bottom: 32px;
+      position: relative; z-index: 2;
+    }
+    .eyebrow-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--accent); opacity: 0.7;
+    }
+
+    .hero-wordmark {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(52px, 8vw, 88px);
+      font-weight: 500; letter-spacing: -3px; line-height: 1;
+      color: var(--text);
+      margin-bottom: 20px;
+      position: relative; z-index: 2;
+    }
+    /* The "o" picks up the accent — same as nav logo, consistent mark */
+    .hero-wordmark span { color: var(--accent); }
+
+    .hero-sub {
+      font-size: clamp(16px, 2vw, 19px);
+      font-weight: 300; line-height: 1.7;
+      color: var(--text-2);
+      max-width: 480px;
+      margin-bottom: 44px;
+      position: relative; z-index: 2;
+    }
+
+    /* ── HERO CTA ── */
+    /*
+      No search bar. The landing page sells the idea.
+      The app collects the information.
+      One button. One commitment. Everything else happens after login.
+    */
+    .hero-cta-group {
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+      position: relative; z-index: 2;
+      margin-bottom: 16px;
+    }
+
+    .hero-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px; font-weight: 600;
+      color: #fff; background: var(--cta);
+      border: none; border-radius: 12px;
+      padding: 16px 36px; cursor: pointer; text-decoration: none;
+      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 2px 16px var(--cta-glow);
+    }
+    .hero-btn:hover {
+      background: var(--cta-h);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px var(--cta-glow);
+    }
+    .hero-btn:active { transform: translateY(0); }
+    .hero-btn svg { width: 18px; height: 18px; }
+
+    /* Trust signals — honest, not pushy */
+    .trust-row {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 12px; color: var(--text-3);
+      position: relative; z-index: 2;
+    }
+    .trust-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-3); opacity: 0.5; }
+
+    /* Social proof — small avatar stack above the CTA */
+    .social-proof {
+      display: flex; align-items: center; gap: 10px;
+      position: relative; z-index: 2;
+    }
+    .avatar-stack {
+      display: flex;
+    }
+    .avatar-stack .av {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 2px solid var(--bg);
+      margin-left: -8px; overflow: hidden;
+      background: var(--bg-subtle);
+      font-size: 11px; font-weight: 600;
+      color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .avatar-stack .av:first-child { margin-left: 0; }
+    .avatar-stack .av img { width: 100%; height: 100%; object-fit: cover; }
+    .social-proof-text {
+      font-size: 13px; color: var(--text-2); font-weight: 400;
+    }
+    .social-proof-text strong { color: var(--text); font-weight: 600; }
+
+    /* ── DESTINATION CAROUSEL ── */
+    /*
+      Auto-scrolls on a timer. Pauses when user hovers or touches.
+      Duplicated cards in HTML create seamless loop via JS reset trick.
+      Trending badge = static label. Wire to real data when available.
+      Photos: high-traffic Unsplash IDs — reliable in production browsers.
+    */
+    .carousel-section {
+      padding: 52px 0 0;
+      position: relative; z-index: 2;
+    }
+    .carousel-header {
+      display: flex; align-items: baseline; gap: 12px;
+      padding: 0 48px; margin-bottom: 20px;
+    }
+    .carousel-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--text-3);
+    }
+    .carousel-hint {
+      font-size: 12px; color: var(--text-3); opacity: 0.6;
+    }
+
+    /* Edge fade — signals more content without arrows */
+    .carousel-mask { position: relative; overflow: hidden; }
+    .carousel-mask::before,
+    .carousel-mask::after {
+      content: ''; position: absolute; top: 0; bottom: 20px; width: 64px;
+      z-index: 2; pointer-events: none;
+    }
+    .carousel-mask::before {
+      left: 0;
+      background: linear-gradient(to right, var(--bg) 20%, transparent);
+    }
+    .carousel-mask::after {
+      right: 0;
+      background: linear-gradient(to left, var(--bg) 20%, transparent);
+    }
+
+    /* Track — no scroll-snap so JS timer can drive smooth scrolling */
+    .carousel-track {
+      display: flex; gap: 12px;
+      padding: 4px 48px 20px;
+      overflow-x: auto;
+      scrollbar-width: none; -ms-overflow-style: none;
+      cursor: grab;
+      /* smooth scroll for JS-driven scrollBy */
+      scroll-behavior: auto;
+    }
+    .carousel-track::-webkit-scrollbar { display: none; }
+    .carousel-track.is-dragging { cursor: grabbing; scroll-behavior: auto; }
+
+    /* Destination card */
+    .dcard {
+      flex-shrink: 0; width: 200px; height: 264px;
+      border-radius: 16px; overflow: hidden;
+      position: relative; cursor: pointer;
+      border: 1px solid var(--border);
+      transition: transform 0.25s, box-shadow 0.25s;
+      text-decoration: none;
+    }
+    .dcard:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+
+    .dcard img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.5s; filter: saturate(0.88);
+      /* Fallback bg while image loads */
+      background: var(--bg-subtle);
+    }
+    .dcard:hover img { transform: scale(1.06); filter: saturate(1.05); }
+
+    .dcard-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top,
+        rgba(16,24,40,0.86) 0%,
+        rgba(16,24,40,0.18) 55%,
+        transparent 100%);
+    }
+
+    .dcard-info {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 16px 14px 14px;
+    }
+    .dcard-city {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px; font-weight: 500;
+      color: #fff; line-height: 1.2;
+    }
+    .dcard-country {
+      font-size: 11px; color: rgba(255,255,255,0.6);
+      margin-top: 3px; letter-spacing: 0.3px;
+    }
+
+    /* Trending badge */
+    .dcard-badge {
+      position: absolute; top: 10px; right: 10px;
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+      text-transform: uppercase; color: #fff;
+      background: rgba(58,92,146,0.72);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px; padding: 4px 8px;
+    }
+    .dcard-badge svg { width: 9px; height: 9px; }
+
+    /* ── HOW IT WORKS ── */
+    .how { padding: 100px 48px; max-width: 1100px; margin: 0 auto; }
+    .section-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 2.5px;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 14px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 3.5vw, 40px); font-weight: 500;
+      letter-spacing: -0.5px; line-height: 1.15;
+      max-width: 380px; margin-bottom: 48px; color: var(--text);
+    }
+    /* Feature rows — replaces step cards */
+    .features { display: flex; flex-direction: column; gap: 0; }
+
+    .feat {
+      display: flex; align-items: flex-start; gap: 24px;
+      padding: 36px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .feat:last-child { border-bottom: none; }
+
+    .feat-icon {
+      width: 48px; height: 48px; flex-shrink: 0;
+      background: var(--accent-s); border: 1px solid rgba(74,111,165,0.18);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent);
+    }
+
+    .feat-body { flex: 1; }
+
+    .feat-t {
+      font-family: 'Playfair Display', serif;
+      font-size: 19px; font-weight: 500; color: var(--text);
+      margin-bottom: 8px; line-height: 1.3;
+    }
+    .feat-d {
+      font-size: 15px; font-weight: 300; color: var(--text-2); line-height: 1.8;
+      max-width: 560px;
+    }
+
+    /* ── TESTIMONIAL ── */
+    .testimonial {
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      padding: 80px 48px; text-align: center; background: var(--bg-subtle);
+    }
+    .t-mark {
+      font-family: 'Playfair Display', serif; font-size: 48px;
+      color: var(--accent); opacity: 0.18; line-height: 1; margin-bottom: 4px;
+    }
+    .t-quote {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(18px, 2.4vw, 26px); font-weight: 400; font-style: italic;
+      line-height: 1.6; max-width: 560px; margin: 0 auto 20px; color: var(--text);
+    }
+    .t-author {
+      font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--text-3);
+    }
+
+    /* ── CTA SECTION ── */
+    .cta-section {
+      padding: 100px 48px; text-align: center; max-width: 520px; margin: 0 auto;
+    }
+    .cta-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(30px, 4vw, 46px); font-weight: 500;
+      line-height: 1.15; letter-spacing: -0.6px;
+      margin-bottom: 14px; color: var(--text);
+    }
+    .cta-title em { font-style: italic; color: var(--accent); }
+    .cta-sub { font-size: 16px; font-weight: 300; color: var(--text-2); margin-bottom: 36px; }
+
+    .g-btn {
+      display: inline-flex; align-items: center; gap: 12px;
+      font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500;
+      color: var(--text); background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 28px; cursor: pointer; text-decoration: none;
+      box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .g-btn:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
+    .g-icon { width: 18px; height: 18px; flex-shrink: 0; }
+    .cta-note { font-size: 12px; color: var(--text-3); margin-top: 14px; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border); padding: 24px 48px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--bg-subtle);
+    }
+    .f-logo { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 500; color: var(--text-3); }
+    .f-copy { font-size: 12px; color: var(--text-3); }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; height: 56px; }
+      .nav-signin { display: none; } /* mobile: only CTA, no ghost link */
+      .hero { padding: 72px 20px 64px; }
+      .hero-wordmark { font-size: clamp(44px, 14vw, 64px); }
+
+      .carousel-header { padding: 0 20px; }
+      .carousel-track { padding: 4px 20px 16px; }
+      .dcard { width: 160px; height: 210px; }
+      .how { padding: 72px 20px; }
+      .feat { gap: 16px; padding: 28px 0; }
+      .feat-icon { width: 40px; height: 40px; }
+      .testimonial, .cta-section { padding: 64px 20px; }
+      footer { flex-direction: column; gap: 10px; text-align: center; padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body id="page">
+
+  <!-- NAV -->
+  <!--
+    Logo left. Two actions right.
+    Sign in = ghost link (secondary — returning users).
+    Get started = filled orange CTA (primary — new users).
+    No middle links — the hero CTA owns conversion on this page.
+  -->
+  <nav>
+    <a href="/" class="logo">and<span>o</span></a>
+    <div class="nav-actions">
+      <a href="#cta" class="nav-signin">Sign in</a>
+      <a href="#cta" class="nav-cta">Get started</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">
+      <div class="eyebrow-dot"></div>
+      AI-powered travel planning
+    </div>
+
+    <h1 class="hero-wordmark">and<span>o</span></h1>
+
+    <p class="hero-sub">
+      Tell Ando how you travel — your pace, budget, and interests. It builds a day-by-day itinerary that actually fits you.
+    </p>
+
+    <!-- Social proof — above the CTA, makes the blank page feel lived-in -->
+    <div class="social-proof" style="margin-bottom: 28px; position: relative; z-index: 2;">
+      <div class="avatar-stack">
+        <div class="av" style="background: #dbe8f8;">S</div>
+        <div class="av" style="background: #d8eee4;">J</div>
+        <div class="av" style="background: #f0e4d4;">M</div>
+        <div class="av" style="background: #e4daf5;">A</div>
+      </div>
+      <span class="social-proof-text"><strong>140+ trips</strong> planned this month</span>
+    </div>
+
+    <!-- Single CTA — one commitment, everything else after login -->
+    <div class="hero-cta-group">
+      <a href="#cta" class="hero-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+        Start planning — it's free
+      </a>
+    </div>
+
+    <!-- Trust signals — honest promises -->
+    <div class="trust-row">
+      <span>No credit card</span>
+      <div class="trust-dot"></div>
+      <span>Ready in under a minute</span>
+      <div class="trust-dot"></div>
+      <span>Your data stays yours</span>
+    </div>
+
+    <!-- Destination carousel — auto-scrolls, pauses on hover/touch -->
+    <div class="carousel-section">
+      <div class="carousel-header">
+        <span class="carousel-label">Popular right now</span>
+      </div>
+      <div class="carousel-mask">
+        <div class="carousel-track" id="destCarousel">
+          <a href="#" class="dcard">
+            <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=500&q=80" alt="Kyoto" loading="lazy"/>
+            <div class="dcard-overlay"></div>
+            <div class="dcard-badge"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M5 1l1.2 2.6 2.8.4-2 2 .5 2.8L5 7.5 2.5 8.8l.5-2.8-2-2 2.8-.4z"/></svg> Trending</div>
+            <div class="dcard-info">
+              <div class="dcard-city">Kyoto</div>
+              <div class="dcard-country">Japan</div>
+            </div>
+          </a>
+          <a href="#" class="dcard">
+            <img src="https://images.unsplash.com/photo-1548707309-dcebeab9ea9b?w=500&q=80" alt="Lisbon" loading="lazy"/>
+            <div class="dcard-overlay"></div>
+            <div class="dcard-badge"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M5 1l1.2 2.6 2.8.4-2 2 .5 2.8L5 7.5 2.5 8.8l.5-2.8-2-2 2.8-.4z"/></svg> Trending</div>
+            <div class="dcard-info">
+              <div class="dcard-city">Lisbon</div>
+              <div class="dcard-country">Portugal</div>
+            </div>
+          </a>
+          <a href="#" class="dcard">
+            <img src="https://images.unsplash.com/photo-1431274172761-fcdab704f4f0?w=500&q=80" alt="Paris" loading="lazy"/>
+            <div class="dcard-overlay"></div>
+            <div class="dcard-info">
+              <div class="dcard-city">Paris</div>
+              <div class="dcard-country">France</div>
+            </div>
+          </a>
+          <a href="#" class="dcard">
+            <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=500&q=80" alt="Tokyo" loading="lazy"/>
+            <div class="dcard-overlay"></div>
+            <div class="dcard-badge"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M5 1l1.2 2.6 2.8.4-2 2 .5 2.8L5 7.5 2.5 8.8l.5-2.8-2-2 2.8-.4z"/></svg> Trending</div>
+            <div class="dcard-info">
+              <div class="dcard-city">Tokyo</div>
+              <div class="dcard-country">Japan</div>
+            </div>
+          </a>
+          <a href="#" class="dcard">
+            <img src="https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=500&q=80" alt="Rome" loading="lazy"/>
+            <div class="dcard-overlay"></div>
+            <div class="dcard-info">
+              <div class="dcard-city">Rome</div>
+              <div class="dcard-country">Italy</div>
+            </div>
+          </a>
+          <a href="#" class="dcard">
+            <img src="https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=500&q=80" alt="Bangkok" loading="lazy"/>
+            <div class="dcard-overlay"></div>
+            <div class="dcard-badge"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M5 1l1.2 2.6 2.8.4-2 2 .5 2.8L5 7.5 2.5 8.8l.5-2.8-2-2 2.8-.4z"/></svg> Trending</div>
+            <div class="dcard-info">
+              <div class="dcard-city">Bangkok</div>
+              <div class="dcard-country">Thailand</div>
+            </div>
+          </a>
+          <a href="#" class="dcard">
+            <img src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=500&q=80" alt="Bali" loading="lazy"/>
+            <div class="dcard-overlay"></div>
+            <div class="dcard-info">
+              <div class="dcard-city">Bali</div>
+              <div class="dcard-country">Indonesia</div>
+            </div>
+          </a>
+          <a href="#" class="dcard">
+            <img src="https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=500&q=80" alt="Barcelona" loading="lazy"/>
+            <div class="dcard-overlay"></div>
+            <div class="dcard-info">
+              <div class="dcard-city">Barcelona</div>
+              <div class="dcard-country">Spain</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    /* ── Carousel auto-scroll ──
+       Strategy: requestAnimationFrame-based pixel scroll at constant speed.
+       When we reach the halfway point (cloned cards), reset silently to start.
+       Pause on mouseenter/touchstart, resume on leave/end.
+       User can also drag to scrub manually.
+    */
+    (function() {
+      const track = document.getElementById('destCarousel');
+      if (!track) return;
+
+      // Clone all cards and append — creates seamless loop
+      const origCards = Array.from(track.children);
+      origCards.forEach(card => {
+        const clone = card.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        track.appendChild(clone);
+      });
+
+      const SPEED = 0.5; // px per frame — slow, calm, not frantic
+      let paused = false;
+      let rafId = null;
+      let lastTime = null;
+
+      function tick(ts) {
+        if (!lastTime) lastTime = ts;
+        const dt = ts - lastTime;
+        lastTime = ts;
+
+        if (!paused) {
+          track.scrollLeft += SPEED * (dt / 16.67); // normalise to 60fps
+          // Seamless reset: when we've scrolled past the originals, jump back
+          const halfWidth = track.scrollWidth / 2;
+          if (track.scrollLeft >= halfWidth) {
+            track.scrollLeft -= halfWidth;
+          }
+        }
+        rafId = requestAnimationFrame(tick);
+      }
+
+      rafId = requestAnimationFrame(tick);
+
+      // Pause on hover
+      track.addEventListener('mouseenter', () => { paused = true; });
+      track.addEventListener('mouseleave', () => { paused = false; lastTime = null; });
+
+      // Pause on touch
+      track.addEventListener('touchstart', () => { paused = true; }, {passive: true});
+      track.addEventListener('touchend',   () => {
+        setTimeout(() => { paused = false; lastTime = null; }, 1200);
+      }, {passive: true});
+
+      // Click-drag to scrub
+      let isDragging = false, dragStartX = 0, dragScrollStart = 0;
+      track.addEventListener('mousedown', e => {
+        isDragging = true; paused = true;
+        dragStartX = e.clientX;
+        dragScrollStart = track.scrollLeft;
+        track.classList.add('is-dragging');
+      });
+      window.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        const dx = e.clientX - dragStartX;
+        track.scrollLeft = dragScrollStart - dx;
+      });
+      window.addEventListener('mouseup', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        track.classList.remove('is-dragging');
+        setTimeout(() => { paused = false; lastTime = null; }, 800);
+      });
+    })();
+  </script>
+
+  <!-- HOW IT WORKS -->
+  <!--
+    Redesigned from numbered instruction cards → feature callouts with icons.
+    Rationale: numbered steps imply work and friction ("you have to do 3 things").
+    Feature callouts imply capability and value ("here's what you get").
+    Same information, opposite emotional register.
+  -->
+  <div class="how" id="how">
+    <p class="section-eyebrow">Built for real travelers</p>
+    <h2 class="section-title">Everything handled.<br>Nothing unnecessary.</h2>
+    <div class="features">
+
+      <div class="feat">
+        <div class="feat-icon">
+          <!-- Personalization -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <div class="feat-body">
+          <div class="feat-t">Made for how you travel</div>
+          <p class="feat-d">Set your pace, budget, and interests once. Every itinerary Ando builds is calibrated to you — not a generic tourist route.</p>
+        </div>
+      </div>
+
+      <div class="feat">
+        <div class="feat-icon">
+          <!-- Day-by-day plan -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <div class="feat-body">
+          <div class="feat-t">Day-by-day, hour-by-hour</div>
+          <p class="feat-d">Activities, meals, transit, timing, cost estimates — fully sequenced. Not a list of places. A plan you can actually follow.</p>
+        </div>
+      </div>
+
+      <div class="feat">
+        <div class="feat-icon">
+          <!-- Regenerate / flexible -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+          </svg>
+        </div>
+        <div class="feat-body">
+          <div class="feat-t">Doesn't feel right? Regenerate.</div>
+          <p class="feat-d">One tap to get a fresh itinerary. Adjust your preferences and go again until the plan matches what you actually want.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TESTIMONIAL -->
+  <div class="testimonial">
+    <div class="t-mark">"</div>
+    <p class="t-quote">I've never felt so prepared for a trip — and it took me less than two minutes to plan it.</p>
+    <p class="t-author">Early tester · 7-day trip to Japan</p>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section" id="cta">
+    <h2 class="cta-title">Ready to plan something <em>real</em>?</h2>
+    <p class="cta-sub">Free to start. No credit card required.</p>
+    <a href="#" class="g-btn">
+      <svg class="g-icon" viewBox="0 0 18 18">
+        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+        <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+        <path d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+      </svg>
+      Continue with Google
+    </a>
+    <p class="cta-note">Your data is yours. We never sell it.</p>
+  </div>
+
+  <footer>
+    <div class="f-logo">ando</div>
+    <div class="f-copy">© 2026 Ando. All rights reserved.</div>
+  </footer>
+
+  <!-- Palette: Dusk Slate — locked -->
+  </body>
+</html>

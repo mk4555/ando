@@ -1,0 +1,554 @@
+/* Mobile-first — default styles target ≤ 768px viewports.
+   Desktop enhancements use min-width: 769px only. No max-width queries. */
+
+/* ── NAV ── */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 56px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(248, 249, 251, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.logo {
+  font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.4px;
+  color: var(--text);
+  text-decoration: none;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: default;
+  padding: 0;
+}
+
+.logoAccent {
+  color: var(--accent);
+}
+
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Ghost link — hidden on mobile, visible on desktop */
+.navSignin {
+  display: none;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+  font-family: inherit;
+}
+
+.navSignin:hover {
+  color: var(--text);
+  background: var(--bg-subtle);
+}
+
+/* Filled CTA */
+.navCta {
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background: var(--cta);
+  border: none;
+  border-radius: 8px;
+  padding: 9px 20px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, transform 0.12s;
+}
+
+.navCta:hover {
+  background: var(--cta-h);
+  transform: translateY(-1px);
+}
+
+.navCta:active {
+  transform: translateY(0);
+}
+
+/* ── HERO ── */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 72px 20px 64px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(74, 111, 165, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-s);
+  border: 1px solid rgba(74, 111, 165, 0.18);
+  border-radius: 100px;
+  padding: 5px 14px;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 2;
+}
+
+.eyebrowDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.wordmark {
+  font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+  font-size: clamp(44px, 14vw, 64px);
+  font-weight: 500;
+  letter-spacing: -3px;
+  line-height: 1;
+  color: var(--text);
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.wordmarkAccent {
+  color: var(--accent);
+}
+
+.sub {
+  font-size: clamp(16px, 2vw, 19px);
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--text-2);
+  max-width: 480px;
+  margin-bottom: 44px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Social proof */
+.socialProof {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+  position: relative;
+  z-index: 2;
+}
+
+.avatarStack {
+  display: flex;
+}
+
+.av {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--bg);
+  margin-left: -8px;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.av:first-child {
+  margin-left: 0;
+}
+
+.socialProofText {
+  font-size: 13px;
+  color: var(--text-2);
+  font-weight: 400;
+}
+
+.socialProofText strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Hero CTA */
+.ctaGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  z-index: 2;
+  margin-bottom: 16px;
+}
+
+.heroBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--cta);
+  border: none;
+  border-radius: 12px;
+  padding: 16px 36px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 16px var(--cta-glow);
+}
+
+.heroBtn:hover {
+  background: var(--cta-h);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px var(--cta-glow);
+}
+
+.heroBtn:active {
+  transform: translateY(0);
+}
+
+/* Trust row */
+.trustRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-3);
+  position: relative;
+  z-index: 2;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.trustDot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--text-3);
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+/* Carousel section wrapper (inside hero) */
+.carouselSection {
+  padding: 52px 0 0;
+  position: relative;
+  z-index: 2;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+}
+
+.carouselHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 0 20px;
+  margin-bottom: 20px;
+}
+
+.carouselLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* ── HOW IT WORKS ── */
+.how {
+  padding: 72px 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.sectionEyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+  font-size: clamp(28px, 3.5vw, 40px);
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+  max-width: 380px;
+  margin-bottom: 48px;
+  color: var(--text);
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+}
+
+.feat {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.feat:last-child {
+  border-bottom: none;
+}
+
+.featIcon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  background: var(--accent-s);
+  border: 1px solid rgba(74, 111, 165, 0.18);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.featBody {
+  flex: 1;
+}
+
+.featTitle {
+  font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.featDesc {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-2);
+  line-height: 1.8;
+  max-width: 560px;
+  margin: 0;
+}
+
+/* ── TESTIMONIAL ── */
+.testimonial {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 64px 20px;
+  text-align: center;
+  background: var(--bg-subtle);
+}
+
+.tMark {
+  font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+  font-size: 48px;
+  color: var(--accent);
+  opacity: 0.18;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.tQuote {
+  font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+  font-size: clamp(18px, 2.4vw, 26px);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.6;
+  max-width: 560px;
+  margin: 0 auto 20px;
+  color: var(--text);
+}
+
+.tAuthor {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 0;
+}
+
+/* ── BOTTOM CTA ── */
+.ctaSection {
+  padding: 64px 20px;
+  text-align: center;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.ctaTitle {
+  font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+  font-size: clamp(30px, 4vw, 46px);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.6px;
+  margin-bottom: 14px;
+  color: var(--text);
+}
+
+.ctaTitle em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.ctaSub {
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--text-2);
+  margin-bottom: 36px;
+}
+
+.gBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 28px;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.gBtn:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+}
+
+.ctaNote {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 14px;
+}
+
+/* ── FOOTER ── */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  background: var(--bg-subtle);
+}
+
+.footerLogo {
+  font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+
+.footerCopy {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* ── DESKTOP OVERRIDES (min-width: 769px) ── */
+@media (min-width: 769px) {
+  /* Nav */
+  .nav {
+    height: 64px;
+    padding: 0 48px;
+  }
+
+  .navSignin {
+    display: block;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 96px 40px 80px;
+  }
+
+  .wordmark {
+    font-size: clamp(52px, 8vw, 88px);
+  }
+
+  /* Carousel */
+  .carouselHeader {
+    padding: 0 48px;
+  }
+
+  /* How it works */
+  .how {
+    padding: 100px 48px;
+  }
+
+  .feat {
+    gap: 24px;
+    padding: 36px 0;
+  }
+
+  .featIcon {
+    width: 48px;
+    height: 48px;
+  }
+
+  /* Testimonial */
+  .testimonial {
+    padding: 80px 48px;
+  }
+
+  /* Bottom CTA */
+  .ctaSection {
+    padding: 100px 48px;
+  }
+
+  /* Footer */
+  .footer {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 24px 48px;
+    text-align: left;
+  }
+}

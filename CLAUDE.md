@@ -44,12 +44,22 @@ Everything in this plan is chosen to answer that question as fast as possible.
 - ✅ Edge Case 006 — Service role key bypasses RLS (audited in Step 5: clean)
 - ✅ Edge Case 008 — UTC offset shifts displayed dates by one day (fixed in Step 4)
 
+**Design progress:**
+
+- ✅ Design system established — "Dusk Slate" palette + Playfair Display / DM Sans typography (locked)
+- ✅ Landing page reference produced (`ando-design-reference-v1.html`)
+- 🔲 Design Step 1 — Landing page redesign implementation (prompt written, pending Claude Code)
+- 🔲 Design Step 2 — Dashboard redesign (awaiting designer reference)
+- 🔲 Design Step 3 — Trip detail + itinerary view redesign (awaiting designer reference)
+- 🔲 Design Step 4 — Onboarding redesign (awaiting designer reference)
+
 **Immediate next actions:**
 
 1. Run `supabase db push` (or apply migration 002 in Supabase dashboard SQL editor) to add share_token
 2. Add `NEXT_PUBLIC_SENTRY_DSN` to Vercel env vars — get DSN from sentry.io project settings
 3. Add `NEXT_PUBLIC_APP_URL=https://your-vercel-url.app` to Vercel env vars (share links use this)
-4. Generate one test itinerary end-to-end, then invite 3–5 friends
+4. Run Design Step 1 Claude Code prompt — rebuild landing page against design reference
+5. Once landing page confirmed, invite 3–5 friends
 
 **Key decisions already made — do not revisit:**
 
@@ -601,6 +611,53 @@ When the time comes to expand, split it like this:
 
 ---
 
+## Design System
+
+### Palette — "Dusk Slate" (locked, do not modify)
+
+```css
+--bg:        #F8F9FB;   /* page background — warm near-white, not clinical pure white */
+--bg-subtle: #EEF1F6;   /* section backgrounds, footer, testimonial stripe */
+--bg-card:   #FFFFFF;   /* card surfaces, search card */
+--border:    #DDE3ED;   /* default borders */
+--border-hi: #C8D2E0;   /* elevated borders, focus states */
+--text:      #1A2234;   /* primary text — near-black with blue undertone */
+--text-2:    #5A6B82;   /* secondary text, body copy */
+--text-3:    #A4B0C0;   /* muted text, labels, placeholders */
+--accent:    #4A6FA5;   /* brand accent — muted slate blue; decorative use */
+--accent-h:  #3A5C92;   /* accent hover state */
+--accent-s:  rgba(74,111,165,0.07);  /* accent tint for icon backgrounds, eyebrow pills */
+--cta:       #3A5C92;   /* action buttons only — darker than accent, distinct weight */
+--cta-h:     #2B4C7E;   /* CTA hover */
+--cta-glow:  rgba(58,92,146,0.22);  /* CTA button shadow */
+--shadow-sm: 0 1px 4px rgba(26,34,52,0.06), 0 4px 16px rgba(26,34,52,0.06);
+--shadow-md: 0 2px 8px rgba(26,34,52,0.06), 0 8px 32px rgba(26,34,52,0.10);
+--shadow-lg: 0 4px 16px rgba(26,34,52,0.06), 0 20px 60px rgba(26,34,52,0.13);
+```
+
+**Note on accent vs CTA:** `--accent` is used for decorative elements (wordmark accent, icon color, eyebrow text, links). `--cta` is used exclusively for primary action buttons. They are different values. Do not use `--accent` on buttons or `--cta` on decorative elements.
+
+### Typography
+
+| Role | Font | Weight | Notes |
+|------|------|--------|-------|
+| Display / headings | Playfair Display | 400, 500, italic | All major headlines, wordmark, testimonial, card city names |
+| Body / UI | DM Sans | 300, 400, 500, 600 | All other text, labels, buttons, captions |
+
+Google Fonts URL: `https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap`
+
+### Styling Approach (inner app screens)
+
+- CSS Modules per page/component — not Tailwind utilities. Tailwind directives remain in globals.css for base reset only.
+- All colors via CSS custom properties from `:root`. Never hardcode hex values in component styles.
+- Pseudo-classes (`:hover`, `::before`, `::after`, `:focus-within`) require CSS Modules — cannot be expressed in inline styles.
+
+### Carousel Implementation Pattern
+
+The destination carousel uses `requestAnimationFrame` at `SPEED = 0.5 px/frame` normalized to 60fps (`dt / 16.67`). Cards are cloned in JS at mount (not duplicated in markup). Seamless loop via `scrollLeft` reset when `>= scrollWidth / 2`. This pattern is locked — do not replace with CSS animations or scroll-snap libraries.
+
+---
+
 ## Architecture Decisions Log
 
 | Date     | Decision                                                                      | Rationale                                                                                                                                                                                                                                                                                |
@@ -617,6 +674,13 @@ When the time comes to expand, split it like this:
 | Feb 2026 | Server components query Supabase directly; API routes are for client-side use | Avoids unnecessary HTTP round-trips on first load. Server components (dashboard, trip page) use `createServerClient` directly. API routes (`/api/trips`, `/api/itineraries`) exist for React Query calls from client components. Never fetch internal API routes from server components. |
 | Feb 2026 | Share links use /shared/[shareToken] route with permissive RLS, not /trips/[id] | Keeps owner-only logic in /trips/[id] clean. Public SELECT policy on trips + itineraries is acceptable because all IDs are gen_random_uuid() — 2^122 bits of entropy, effectively unguessable. Separate route prevents confusion between owner view and read-only view. |
 | Feb 2026 | PWA uses SVG icon (icon.svg) instead of PNG for MVP | SVG works in Chrome/Android manifest; iOS Safari uses apple-touch-icon. For proper iOS home screen icon (crisp PNG), generate 192×192 and 512×512 PNGs from the SVG and replace icon.svg with them before wide rollout. |
+| Feb 2026 | Design system: "Dusk Slate" light-mode palette, not dark mode | Light mode is more accessible, works better in sunlight for travelers, and matches the calm-trustworthy brand tone. Dark mode is not planned for this stage. |
+| Feb 2026 | CSS Modules for redesigned pages, not Tailwind utilities | Design tokens are CSS custom properties. Tailwind utility classes cannot reference CSS variables cleanly for all patterns (pseudo-classes, shadows). CSS Modules give full CSS access while keeping styles scoped. Tailwind base reset stays in globals.css. |
+| Feb 2026 | Landing page is product-first (search card + carousel), not photography-first | Previous design (v0) led with full-bleed hero photography. New design leads with the search card — shows the product, not just a travel aesthetic. Carousel below demonstrates destinations without blocking the primary action. |
+| Feb 2026 | Destination carousel cards hardcoded for friends stage | No places API at this stage. Static Unsplash image URLs with known-stable IDs. Replace with dynamic data when Places Service is built (Phase 2). |
+| Feb 2026 | Removed search bar from landing page | The search bar collected destination + dates but couldn't act on them — users still had to complete a full trip form after login. Two data entry points with no value from the first. One CTA → OAuth → form is a tighter, lossless funnel. |
+| Feb 2026 | Added social proof (avatar stack + trip count) above hero CTA | Static social proof ("140+ trips planned this month") removes the empty-page problem for a friends-stage app with no credibility signals. Update the number manually as real usage grows; replace with live count when analytics are wired. |
+| Feb 2026 | Landing page CSS written mobile-first | Default styles target mobile (≤ 768px). Desktop overrides use `@media (min-width: 769px)`. Reference HTML is desktop-first for design review only — implementation inverts the breakpoint direction. |
 
 ---
 
@@ -671,5 +735,5 @@ Date strings from Supabase (`YYYY-MM-DD`) must always have `T00:00:00` appended 
 ---
 
 _Maintained by: Ando Engineering_  
-_Last updated: 2026-02-27 — All 6 steps complete. Apply migration 002, set env vars in Vercel, invite friends._
-_Next review: When first 5 friends have used it on a real trip_
+_Last updated: 2026-02-28 — Design reference v1 updated (search bar removed, social proof added). Mobile-first approach confirmed. Design Step 1 prompt finalized. Awaiting Claude Code implementation._  
+_Next review: After Design Step 1 confirmed by Claude Code_

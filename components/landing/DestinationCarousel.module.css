@@ -1,0 +1,146 @@
+/* Mobile-first — default styles target ≤ 768px */
+
+.carouselMask {
+  position: relative;
+  overflow: hidden;
+}
+
+.carouselMask::before,
+.carouselMask::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 20px;
+  width: 64px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.carouselMask::before {
+  left: 0;
+  background: linear-gradient(to right, var(--bg) 20%, transparent);
+}
+
+.carouselMask::after {
+  right: 0;
+  background: linear-gradient(to left, var(--bg) 20%, transparent);
+}
+
+.carouselTrack {
+  display: flex;
+  gap: 12px;
+  padding: 4px 20px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+  scroll-behavior: auto;
+}
+
+.carouselTrack::-webkit-scrollbar {
+  display: none;
+}
+
+.isDragging {
+  cursor: grabbing;
+}
+
+/* Destination card — mobile size */
+.dcard {
+  flex-shrink: 0;
+  width: 160px;
+  height: 210px;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: transform 0.25s, box-shadow 0.25s;
+  text-decoration: none;
+  display: block;
+}
+
+.dcard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.dcardImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s;
+  filter: saturate(0.88);
+  background: var(--bg-subtle);
+  display: block;
+}
+
+.dcard:hover .dcardImg {
+  transform: scale(1.06);
+  filter: saturate(1.05);
+}
+
+.dcardOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(16, 24, 40, 0.86) 0%,
+    rgba(16, 24, 40, 0.18) 55%,
+    transparent 100%
+  );
+}
+
+.dcardInfo {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 14px 14px;
+}
+
+.dcardCity {
+  font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.dcardCountry {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 3px;
+  letter-spacing: 0.3px;
+}
+
+.dcardBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(58, 92, 146, 0.72);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+/* ── Desktop overrides ── */
+@media (min-width: 769px) {
+  .carouselTrack {
+    padding: 4px 48px 20px;
+  }
+
+  .dcard {
+    width: 200px;
+    height: 264px;
+  }
+}
