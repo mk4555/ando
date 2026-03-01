@@ -1,6 +1,6 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
+import { signInWithGoogle } from '@/lib/auth/signInWithGoogle'
 
 interface Props {
   className?: string
@@ -9,13 +9,7 @@ interface Props {
 
 export default function SignInButton({ className, children }: Props) {
   async function signIn() {
-    const supabase = createClient()
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/callback`,
-      },
-    })
+    await signInWithGoogle()
   }
 
   return (

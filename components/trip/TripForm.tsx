@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { FieldError, FieldLabel, FormInput, FormSelect } from '@/components/ui/form'
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY', 'SGD', 'CHF']
 
-// Local date string YYYY-MM-DD using the browser's timezone
 function todayLocalStr() {
   const d = new Date()
   return [
@@ -40,9 +40,7 @@ export default function TripForm() {
     const errs: FormErrors = {}
     const today = todayLocalStr()
 
-    if (!destination.trim()) {
-      errs.destination = 'Destination is required'
-    }
+    if (!destination.trim()) errs.destination = 'Destination is required'
 
     if (!startDate) {
       errs.start_date = 'Start date is required'
@@ -62,9 +60,7 @@ export default function TripForm() {
       if (diffDays > 13) errs.end_date = 'Trip must be 14 days or shorter'
     }
 
-    if (travelerCount < 1) {
-      errs.traveler_count = 'At least 1 traveler required'
-    }
+    if (travelerCount < 1) errs.traveler_count = 'At least 1 traveler required'
 
     return errs
   }
@@ -85,9 +81,9 @@ export default function TripForm() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         destination: destination.trim(),
-        title:        title.trim() || null,
-        start_date:   startDate,
-        end_date:     endDate,
+        title: title.trim() || null,
+        start_date: startDate,
+        end_date: endDate,
         traveler_count: travelerCount,
         budget_total: budget ? Number(budget) : null,
         currency,
@@ -108,141 +104,102 @@ export default function TripForm() {
 
   const today = todayLocalStr()
 
-  const inputClass =
-    'mt-1.5 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-4 py-2.5 text-sm text-[var(--text)] placeholder-[var(--text-3)] outline-none focus:border-[var(--border-hi)] focus:ring-2 focus:ring-[var(--accent-s)]'
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Destination */}
       <div>
-        <label className="block text-sm font-medium text-[var(--text)]">
-          Destination <span className="text-[var(--error)]">*</span>
-        </label>
-        <input
+        <FieldLabel required>Destination</FieldLabel>
+        <FormInput
           type="text"
           value={destination}
           onChange={e => setDestination(e.target.value)}
           placeholder="e.g. Tokyo, Japan"
-          className={inputClass}
         />
-        {errors.destination && (
-          <p className="mt-1.5 text-xs text-[var(--error)]">{errors.destination}</p>
-        )}
+        <FieldError message={errors.destination} />
       </div>
 
-      {/* Trip name */}
       <div>
-        <label className="block text-sm font-medium text-[var(--text)]">
-          Trip name{' '}
-          <span className="font-normal text-[var(--text-3)]">— optional</span>
-        </label>
-        <input
+        <FieldLabel optionalHint="optional">Trip name</FieldLabel>
+        <FormInput
           type="text"
           value={title}
           onChange={e => setTitle(e.target.value)}
           placeholder="e.g. Anniversary trip"
-          className={inputClass}
         />
       </div>
 
-      {/* Dates */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-[var(--text)]">
-            Start date <span className="text-[var(--error)]">*</span>
-          </label>
-          <input
+          <FieldLabel required>Start date</FieldLabel>
+          <FormInput
             type="date"
             value={startDate}
             min={today}
             onChange={e => {
               setStartDate(e.target.value)
-              // Reset end date if it's now before the new start
               if (endDate && endDate < e.target.value) setEndDate('')
             }}
-            className={inputClass}
           />
-          {errors.start_date && (
-            <p className="mt-1.5 text-xs text-[var(--error)]">{errors.start_date}</p>
-          )}
+          <FieldError message={errors.start_date} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-[var(--text)]">
-            End date <span className="text-[var(--error)]">*</span>
-          </label>
-          <input
+          <FieldLabel required>End date</FieldLabel>
+          <FormInput
             type="date"
             value={endDate}
             min={startDate || today}
             onChange={e => setEndDate(e.target.value)}
-            className={inputClass}
           />
-          {errors.end_date && (
-            <p className="mt-1.5 text-xs text-[var(--error)]">{errors.end_date}</p>
-          )}
+          <FieldError message={errors.end_date} />
         </div>
       </div>
 
-      {/* Travelers */}
       <div>
-        <label className="block text-sm font-medium text-[var(--text)]">
-          Travelers <span className="text-[var(--error)]">*</span>
-        </label>
-        <input
+        <FieldLabel required>Travelers</FieldLabel>
+        <FormInput
           type="number"
           min={1}
           max={20}
           value={travelerCount}
           onChange={e => setTravelerCount(Math.max(1, Number(e.target.value)))}
-          className="mt-1.5 w-28 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-4 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--border-hi)] focus:ring-2 focus:ring-[var(--accent-s)]"
+          className="w-28"
         />
-        {errors.traveler_count && (
-          <p className="mt-1.5 text-xs text-[var(--error)]">{errors.traveler_count}</p>
-        )}
+        <FieldError message={errors.traveler_count} />
       </div>
 
-      {/* Budget */}
       <div>
-        <label className="block text-sm font-medium text-[var(--text)]">
-          Total budget{' '}
-          <span className="font-normal text-[var(--text-3)]">— optional</span>
-        </label>
+        <FieldLabel optionalHint="optional">Total budget</FieldLabel>
         <div className="mt-1.5 flex gap-2">
-          <select
+          <FormSelect
             value={currency}
             onChange={e => setCurrency(e.target.value)}
-            className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--border-hi)] focus:ring-2 focus:ring-[var(--accent-s)]"
+            className="mt-0 w-auto px-3"
           >
             {CURRENCIES.map(c => (
               <option key={c} value={c}>{c}</option>
             ))}
-          </select>
-          <input
+          </FormSelect>
+          <FormInput
             type="number"
             min={0}
             step="1"
             value={budget}
             onChange={e => setBudget(e.target.value)}
             placeholder="e.g. 3000"
-            className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-4 py-2.5 text-sm text-[var(--text)] placeholder-[var(--text-3)] outline-none focus:border-[var(--border-hi)] focus:ring-2 focus:ring-[var(--accent-s)]"
+            className="mt-0 flex-1"
           />
         </div>
       </div>
 
-      {/* Visibility */}
       <div>
-        <label className="block text-sm font-medium text-[var(--text)]">
-          Visibility
-        </label>
-        <select
+        <FieldLabel>Visibility</FieldLabel>
+        <FormSelect
           value={visibility}
           onChange={e => setVisibility(e.target.value as 'private' | 'unlisted' | 'public')}
-          className="mt-1.5 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-4 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--border-hi)] focus:ring-2 focus:ring-[var(--accent-s)]"
         >
           <option value="private">Private (only you)</option>
           <option value="unlisted">Unlisted (share link only)</option>
           <option value="public">Public (discoverable in Explore)</option>
-        </select>
+        </FormSelect>
       </div>
 
       {errors.form && (
@@ -254,7 +211,7 @@ export default function TripForm() {
         disabled={submitting}
         className="w-full rounded-lg bg-[var(--cta)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--cta-h)] disabled:opacity-50"
       >
-        {submitting ? 'Creating trip…' : 'Create trip'}
+        {submitting ? 'Creating trip...' : 'Create trip'}
       </button>
     </form>
   )

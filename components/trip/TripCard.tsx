@@ -1,32 +1,9 @@
 import Link from 'next/link'
 import type { Trip } from '@/lib/types'
+import { formatTripDateRange } from '@/lib/date'
 
 export interface TripCardProps {
   trip: Trip & { itineraries: { is_active: boolean }[] }
-}
-
-function formatDateRange(start: string, end: string): string {
-  // Append T00:00:00 to avoid UTC offset shifting the displayed date
-  const s = new Date(start + 'T00:00:00')
-  const e = new Date(end + 'T00:00:00')
-  const mo: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
-
-  if (s.getFullYear() !== e.getFullYear()) {
-    return (
-      s.toLocaleDateString('en-US', { ...mo, year: 'numeric' }) +
-      ' – ' +
-      e.toLocaleDateString('en-US', { ...mo, year: 'numeric' })
-    )
-  }
-  if (s.getMonth() === e.getMonth()) {
-    return `${s.toLocaleDateString('en-US', { month: 'short' })} ${s.getDate()}–${e.getDate()}, ${e.getFullYear()}`
-  }
-  return (
-    s.toLocaleDateString('en-US', mo) +
-    ' – ' +
-    e.toLocaleDateString('en-US', mo) +
-    `, ${e.getFullYear()}`
-  )
 }
 
 export default function TripCard({ trip }: TripCardProps) {
@@ -56,8 +33,8 @@ export default function TripCard({ trip }: TripCardProps) {
       </div>
 
       <div className="mt-4 flex items-center gap-3 text-sm text-[var(--text-2)]">
-        <span>{formatDateRange(trip.start_date, trip.end_date)}</span>
-        <span>·</span>
+        <span>{formatTripDateRange(trip.start_date, trip.end_date)}</span>
+        <span>�</span>
         <span>
           {trip.traveler_count} {trip.traveler_count === 1 ? 'traveler' : 'travelers'}
         </span>

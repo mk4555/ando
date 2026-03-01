@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Itinerary, Trip } from '@/lib/types'
 import ItineraryView from './ItineraryView'
+import Card from '@/components/ui/Card'
 
 interface Props {
   trip: Trip
@@ -16,7 +17,7 @@ export default function ItinerarySection({ trip, itinerary }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   async function handleGenerate() {
-    setIsGenerating(true)  // Edge Case 003: set immediately on click
+    setIsGenerating(true)
     setError(null)
 
     try {
@@ -32,12 +33,11 @@ export default function ItinerarySection({ trip, itinerary }: Props) {
         return
       }
 
-      // Re-run the server component to pick up the new itinerary
       router.refresh()
     } catch {
       setError('Network error. Please check your connection and try again.')
     } finally {
-      setIsGenerating(false)  // Edge Case 003: always reset in finally
+      setIsGenerating(false)
     }
   }
 
@@ -46,14 +46,13 @@ export default function ItinerarySection({ trip, itinerary }: Props) {
       <div>
         <ItineraryView itinerary={itinerary} currency={trip.currency} />
 
-        {/* Regenerate */}
         <div className="mt-8 flex flex-col items-start gap-2">
           <button
             onClick={handleGenerate}
             disabled={isGenerating}
             className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg)] disabled:opacity-50"
           >
-            {isGenerating ? 'Regenerating…' : 'Regenerate itinerary'}
+            {isGenerating ? 'Regenerating...' : 'Regenerate itinerary'}
           </button>
           {error && <p className="text-sm text-[var(--error)]">{error}</p>}
         </div>
@@ -61,14 +60,13 @@ export default function ItinerarySection({ trip, itinerary }: Props) {
     )
   }
 
-  // No itinerary yet — show Generate button
   return (
-    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-8 text-center">
+    <Card className="p-8 text-center">
       {isGenerating ? (
         <>
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-[var(--border)] border-t-[var(--text)]" />
-          <p className="text-[var(--text-2)]">Ando is planning your trip…</p>
-          <p className="mt-1 text-sm text-[var(--text-3)]">This usually takes 15–30 seconds.</p>
+          <p className="text-[var(--text-2)]">Ando is planning your trip...</p>
+          <p className="mt-1 text-sm text-[var(--text-3)]">This usually takes 15-30 seconds.</p>
         </>
       ) : (
         <>
@@ -86,6 +84,6 @@ export default function ItinerarySection({ trip, itinerary }: Props) {
           </button>
         </>
       )}
-    </div>
+    </Card>
   )
 }

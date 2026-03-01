@@ -1,17 +1,11 @@
 'use client'
 
 import { useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { signInWithGoogle } from '@/lib/auth/signInWithGoogle'
 
 export default function LoginPage() {
   useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/callback`,
-      },
-    })
+    signInWithGoogle()
   }, [])
 
   return (
