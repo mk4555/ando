@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:status": "npx supabase migration list",
+    "db:new": "npx supabase migration new",
+    "db:push": "npx supabase db push",
+    "push:with-db": "npm run db:push && git push"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.40.0",
