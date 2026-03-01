@@ -93,3 +93,4 @@ Sentry config is in `.env.sentry-build-plugin` (auto-created by Sentry setup).
 ### Critical Rules
 
 1. Always generate a Git commit message after code change is made.
+2. Don't commit the code until I review it. Only generate the commit message, don't add anything to the PR.
