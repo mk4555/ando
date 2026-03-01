@@ -13,6 +13,7 @@ export default function Navbar({ isLoggedIn }: Props) {
         and<span className={styles.logoAccent}>o</span>
       </Link>
       <div className={styles.navActions}>
+        <Link href="/explore" className={styles.navLink}>Explore</Link>
         {!isLoggedIn && (
           <SignInButton className={styles.navSignin}>Sign in</SignInButton>
         )}

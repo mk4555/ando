@@ -40,6 +40,21 @@
   gap: 10px;
 }
 
+.navLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-decoration: none;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.navLink:hover {
+  color: var(--text);
+  background: var(--bg-subtle);
+}
+
 /* Ghost link — hidden on mobile, visible on desktop */
 .navSignin {
   display: none;

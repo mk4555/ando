@@ -39,6 +39,7 @@ export async function POST(req: Request) {
     traveler_count = 1,
     budget_total,
     currency = 'USD',
+    visibility = 'private',
   } = body
 
   // Server-side validation — mirrors client rules exactly (Edge Case 004)
@@ -66,6 +67,9 @@ export async function POST(req: Request) {
   if (Number(traveler_count) < 1) {
     return NextResponse.json({ error: 'At least 1 traveler required' }, { status: 400 })
   }
+  if (!['private', 'unlisted', 'public'].includes(visibility)) {
+    return NextResponse.json({ error: 'Invalid visibility value' }, { status: 400 })
+  }
 
   const { data: trip, error } = await supabase
     .from('trips')
@@ -78,6 +82,7 @@ export async function POST(req: Request) {
       traveler_count: Number(traveler_count),
       budget_total:   budget_total ? Number(budget_total) : null,
       currency,
+      visibility,
       status:         'draft',
     })
     .select()

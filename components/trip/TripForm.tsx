@@ -32,6 +32,7 @@ export default function TripForm() {
   const [travelerCount, setTravelerCount] = useState(1)
   const [budget, setBudget] = useState('')
   const [currency, setCurrency] = useState('USD')
+  const [visibility, setVisibility] = useState<'private' | 'unlisted' | 'public'>('private')
   const [errors, setErrors] = useState<FormErrors>({})
   const [submitting, setSubmitting] = useState(false)
 
@@ -90,6 +91,7 @@ export default function TripForm() {
         traveler_count: travelerCount,
         budget_total: budget ? Number(budget) : null,
         currency,
+        visibility,
       }),
     })
 
@@ -225,6 +227,22 @@ export default function TripForm() {
             className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-4 py-2.5 text-sm text-[var(--text)] placeholder-[var(--text-3)] outline-none focus:border-[var(--border-hi)] focus:ring-2 focus:ring-[var(--accent-s)]"
           />
         </div>
+      </div>
+
+      {/* Visibility */}
+      <div>
+        <label className="block text-sm font-medium text-[var(--text)]">
+          Visibility
+        </label>
+        <select
+          value={visibility}
+          onChange={e => setVisibility(e.target.value as 'private' | 'unlisted' | 'public')}
+          className="mt-1.5 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-4 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--border-hi)] focus:ring-2 focus:ring-[var(--accent-s)]"
+        >
+          <option value="private">Private (only you)</option>
+          <option value="unlisted">Unlisted (share link only)</option>
+          <option value="public">Public (discoverable in Explore)</option>
+        </select>
       </div>
 
       {errors.form && (

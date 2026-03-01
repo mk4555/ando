@@ -22,6 +22,7 @@ export interface TravelPreferences {
 }
 
 export type TripStatus = 'draft' | 'active' | 'completed' | 'archived'
+export type TripVisibility = 'private' | 'unlisted' | 'public'
 
 export interface Trip {
   id: string
@@ -35,6 +36,7 @@ export interface Trip {
   budget_total: number | null
   currency: string
   status: TripStatus
+  visibility: TripVisibility
   share_token: string
   metadata: Record<string, unknown>
   created_at: string
@@ -50,6 +52,7 @@ export interface TripFormData {
   traveler_count: number
   budget_total: string    // string in form, parsed to number | null on submit
   currency: string
+  visibility: TripVisibility
 }
 
 export interface Itinerary {
