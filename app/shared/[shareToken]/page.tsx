@@ -12,29 +12,38 @@ function formatDate(dateStr: string) {
   })
 }
 
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+}
+
+interface SharedTripRow {
+  trip_id: string
+  destination: string
+  title: string | null
+  start_date: string
+  end_date: string
+  traveler_count: number
+  budget_total: number | null
+  currency: string
+  itinerary: Itinerary | null
+}
+
 export default async function SharedTripPage({
   params,
 }: {
   params: Promise<{ shareToken: string }>
 }) {
   const { shareToken } = await params
+  if (!isUuid(shareToken)) notFound()
+
   const supabase = await createServerClient()
 
-  // No auth required — public SELECT policy allows this query
-  const { data: trip } = await supabase
-    .from('trips')
-    .select('*')
-    .eq('share_token', shareToken)
-    .maybeSingle()
+  const { data, error } = await supabase.rpc('get_shared_trip', {
+    p_share_token: shareToken,
+  })
 
-  if (!trip) notFound()
-
-  const { data: itinerary } = await supabase
-    .from('itineraries')
-    .select('*')
-    .eq('trip_id', trip.id)
-    .eq('is_active', true)
-    .maybeSingle()
+  if (error || !data || data.length === 0) notFound()
+  const trip = data[0] as SharedTripRow
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
@@ -80,9 +89,9 @@ export default async function SharedTripPage({
 
         {/* Itinerary (read-only) */}
         <div className="mt-10">
-          {itinerary ? (
+          {trip.itinerary ? (
             <ItineraryView
-              itinerary={itinerary as Itinerary}
+              itinerary={trip.itinerary}
               currency={trip.currency}
             />
           ) : (
