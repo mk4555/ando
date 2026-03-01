@@ -2,7 +2,6 @@ import Link from 'next/link'
 import styles from './(auth)/login/login.module.css'
 import SignInButton from '@/components/landing/SignInButton'
 import DestinationCarousel from '@/components/landing/DestinationCarousel'
-import NavbarWrapper from '@/components/layout/NavbarWrapper'
 import { createServerClient } from '@/lib/supabase/server'
 
 export default async function LandingPage() {
@@ -12,7 +11,6 @@ export default async function LandingPage() {
 
   return (
     <>
-      <NavbarWrapper />
 
       {/* ── HERO ── */}
       <section className={styles.hero}>

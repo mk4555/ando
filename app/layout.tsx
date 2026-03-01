@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono, Playfair_Display, DM_Sans } from 'next/font/google'
 import './globals.css'
+import NavbarWrapper from '@/components/layout/NavbarWrapper'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -56,6 +57,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${dmSans.variable}`}
     >
       <body className="antialiased">
+        <NavbarWrapper />
         {children}
       </body>
     </html>
