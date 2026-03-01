@@ -17,26 +17,26 @@ function formatDayDate(dateStr: string): string {
 
 export default function DayCard({ day, currency }: Props) {
   return (
-    <div className="rounded-xl border border-stone-200 bg-white">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)]">
       {/* Day header */}
-      <div className="border-b border-stone-100 px-6 py-4">
+      <div className="border-b border-[var(--border)] px-6 py-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-3)]">
               Day {day.day}
             </p>
-            <h3 className="mt-0.5 text-base font-semibold text-stone-900">
+            <h3 className="mt-0.5 text-base font-semibold text-[var(--text)]">
               {day.theme}
             </h3>
-            <p className="mt-0.5 text-sm text-stone-500">{formatDayDate(day.date)}</p>
+            <p className="mt-0.5 text-sm text-[var(--text-2)]">{formatDayDate(day.date)}</p>
           </div>
           <div className="shrink-0 text-right">
-            <p className="text-xs text-stone-400">Est. spend</p>
-            <p className="text-sm font-medium text-stone-700">
+            <p className="text-xs text-[var(--text-3)]">Est. spend</p>
+            <p className="text-sm font-medium text-[var(--text)]">
               {currency} {day.estimated_cost.toLocaleString()}
             </p>
             {day.walking_km > 0 && (
-              <p className="mt-0.5 text-xs text-stone-400">{day.walking_km} km walking</p>
+              <p className="mt-0.5 text-xs text-[var(--text-3)]">{day.walking_km} km walking</p>
             )}
           </div>
         </div>

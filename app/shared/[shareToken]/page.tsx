@@ -37,14 +37,14 @@ export default async function SharedTripPage({
     .maybeSingle()
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-[var(--bg)]">
       <div className="mx-auto max-w-2xl px-4 py-12">
         {/* Ando brand */}
         <div className="mb-8 flex items-center justify-between">
-          <span className="text-sm font-semibold tracking-tight text-stone-900">ando</span>
+          <span className="text-sm font-semibold tracking-tight text-[var(--text)]">ando</span>
           <Link
             href="/dashboard"
-            className="rounded-lg bg-stone-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-stone-700"
+            className="rounded-lg bg-[var(--cta)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--cta-h)]"
           >
             Plan my own trip
           </Link>
@@ -52,13 +52,13 @@ export default async function SharedTripPage({
 
         {/* Trip header */}
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-stone-900">
+          <h1 className="text-3xl font-semibold tracking-tight text-[var(--text)]">
             {trip.destination}
           </h1>
           {trip.title && (
-            <p className="mt-1 text-stone-500">{trip.title}</p>
+            <p className="mt-1 text-[var(--text-2)]">{trip.title}</p>
           )}
-          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-500">
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[var(--text-2)]">
             <span>
               {formatDate(trip.start_date)} – {formatDate(trip.end_date)}
             </span>
@@ -86,8 +86,8 @@ export default async function SharedTripPage({
               currency={trip.currency}
             />
           ) : (
-            <div className="rounded-xl border border-stone-200 bg-white p-8 text-center">
-              <p className="text-stone-500">
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-8 text-center">
+              <p className="text-[var(--text-2)]">
                 This itinerary hasn&apos;t been generated yet.
               </p>
             </div>
@@ -95,13 +95,13 @@ export default async function SharedTripPage({
         </div>
 
         {/* CTA */}
-        <div className="mt-12 rounded-xl border border-stone-200 bg-white p-6 text-center">
-          <p className="text-sm font-medium text-stone-700">
+        <div className="mt-12 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6 text-center">
+          <p className="text-sm font-medium text-[var(--text)]">
             Want Ando to plan your next trip?
           </p>
           <Link
             href="/dashboard"
-            className="mt-3 inline-block rounded-lg bg-stone-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-stone-700"
+            className="mt-3 inline-block rounded-lg bg-[var(--cta)] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--cta-h)]"
           >
             Get started →
           </Link>

@@ -107,14 +107,14 @@ export default function TripForm() {
   const today = todayLocalStr()
 
   const inputClass =
-    'mt-1.5 w-full rounded-lg border border-stone-200 bg-white px-4 py-2.5 text-sm text-stone-900 placeholder-stone-400 outline-none focus:border-stone-400 focus:ring-2 focus:ring-stone-200'
+    'mt-1.5 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-4 py-2.5 text-sm text-[var(--text)] placeholder-[var(--text-3)] outline-none focus:border-[var(--border-hi)] focus:ring-2 focus:ring-[var(--accent-s)]'
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Destination */}
       <div>
-        <label className="block text-sm font-medium text-stone-700">
-          Destination <span className="text-red-500">*</span>
+        <label className="block text-sm font-medium text-[var(--text)]">
+          Destination <span className="text-[var(--error)]">*</span>
         </label>
         <input
           type="text"
@@ -124,15 +124,15 @@ export default function TripForm() {
           className={inputClass}
         />
         {errors.destination && (
-          <p className="mt-1.5 text-xs text-red-600">{errors.destination}</p>
+          <p className="mt-1.5 text-xs text-[var(--error)]">{errors.destination}</p>
         )}
       </div>
 
       {/* Trip name */}
       <div>
-        <label className="block text-sm font-medium text-stone-700">
+        <label className="block text-sm font-medium text-[var(--text)]">
           Trip name{' '}
-          <span className="font-normal text-stone-400">— optional</span>
+          <span className="font-normal text-[var(--text-3)]">— optional</span>
         </label>
         <input
           type="text"
@@ -146,8 +146,8 @@ export default function TripForm() {
       {/* Dates */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-stone-700">
-            Start date <span className="text-red-500">*</span>
+          <label className="block text-sm font-medium text-[var(--text)]">
+            Start date <span className="text-[var(--error)]">*</span>
           </label>
           <input
             type="date"
@@ -161,12 +161,12 @@ export default function TripForm() {
             className={inputClass}
           />
           {errors.start_date && (
-            <p className="mt-1.5 text-xs text-red-600">{errors.start_date}</p>
+            <p className="mt-1.5 text-xs text-[var(--error)]">{errors.start_date}</p>
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-stone-700">
-            End date <span className="text-red-500">*</span>
+          <label className="block text-sm font-medium text-[var(--text)]">
+            End date <span className="text-[var(--error)]">*</span>
           </label>
           <input
             type="date"
@@ -176,15 +176,15 @@ export default function TripForm() {
             className={inputClass}
           />
           {errors.end_date && (
-            <p className="mt-1.5 text-xs text-red-600">{errors.end_date}</p>
+            <p className="mt-1.5 text-xs text-[var(--error)]">{errors.end_date}</p>
           )}
         </div>
       </div>
 
       {/* Travelers */}
       <div>
-        <label className="block text-sm font-medium text-stone-700">
-          Travelers <span className="text-red-500">*</span>
+        <label className="block text-sm font-medium text-[var(--text)]">
+          Travelers <span className="text-[var(--error)]">*</span>
         </label>
         <input
           type="number"
@@ -192,24 +192,24 @@ export default function TripForm() {
           max={20}
           value={travelerCount}
           onChange={e => setTravelerCount(Math.max(1, Number(e.target.value)))}
-          className="mt-1.5 w-28 rounded-lg border border-stone-200 bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:border-stone-400 focus:ring-2 focus:ring-stone-200"
+          className="mt-1.5 w-28 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-4 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--border-hi)] focus:ring-2 focus:ring-[var(--accent-s)]"
         />
         {errors.traveler_count && (
-          <p className="mt-1.5 text-xs text-red-600">{errors.traveler_count}</p>
+          <p className="mt-1.5 text-xs text-[var(--error)]">{errors.traveler_count}</p>
         )}
       </div>
 
       {/* Budget */}
       <div>
-        <label className="block text-sm font-medium text-stone-700">
+        <label className="block text-sm font-medium text-[var(--text)]">
           Total budget{' '}
-          <span className="font-normal text-stone-400">— optional</span>
+          <span className="font-normal text-[var(--text-3)]">— optional</span>
         </label>
         <div className="mt-1.5 flex gap-2">
           <select
             value={currency}
             onChange={e => setCurrency(e.target.value)}
-            className="rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-sm text-stone-900 outline-none focus:border-stone-400 focus:ring-2 focus:ring-stone-200"
+            className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--border-hi)] focus:ring-2 focus:ring-[var(--accent-s)]"
           >
             {CURRENCIES.map(c => (
               <option key={c} value={c}>{c}</option>
@@ -222,19 +222,19 @@ export default function TripForm() {
             value={budget}
             onChange={e => setBudget(e.target.value)}
             placeholder="e.g. 3000"
-            className="flex-1 rounded-lg border border-stone-200 bg-white px-4 py-2.5 text-sm text-stone-900 placeholder-stone-400 outline-none focus:border-stone-400 focus:ring-2 focus:ring-stone-200"
+            className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-4 py-2.5 text-sm text-[var(--text)] placeholder-[var(--text-3)] outline-none focus:border-[var(--border-hi)] focus:ring-2 focus:ring-[var(--accent-s)]"
           />
         </div>
       </div>
 
       {errors.form && (
-        <p className="text-sm text-red-600">{errors.form}</p>
+        <p className="text-sm text-[var(--error)]">{errors.form}</p>
       )}
 
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-lg bg-stone-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-stone-700 disabled:opacity-50"
+        className="w-full rounded-lg bg-[var(--cta)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--cta-h)] disabled:opacity-50"
       >
         {submitting ? 'Creating trip…' : 'Create trip'}
       </button>

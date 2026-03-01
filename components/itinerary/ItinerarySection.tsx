@@ -51,11 +51,11 @@ export default function ItinerarySection({ trip, itinerary }: Props) {
           <button
             onClick={handleGenerate}
             disabled={isGenerating}
-            className="rounded-lg border border-stone-200 bg-white px-5 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50 disabled:opacity-50"
+            className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg)] disabled:opacity-50"
           >
             {isGenerating ? 'Regenerating…' : 'Regenerate itinerary'}
           </button>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-[var(--error)]">{error}</p>}
         </div>
       </div>
     )
@@ -63,24 +63,24 @@ export default function ItinerarySection({ trip, itinerary }: Props) {
 
   // No itinerary yet — show Generate button
   return (
-    <div className="rounded-xl border border-stone-200 bg-white p-8 text-center">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-8 text-center">
       {isGenerating ? (
         <>
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-stone-200 border-t-stone-900" />
-          <p className="text-stone-600">Ando is planning your trip…</p>
-          <p className="mt-1 text-sm text-stone-400">This usually takes 15–30 seconds.</p>
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-[var(--border)] border-t-[var(--text)]" />
+          <p className="text-[var(--text-2)]">Ando is planning your trip…</p>
+          <p className="mt-1 text-sm text-[var(--text-3)]">This usually takes 15–30 seconds.</p>
         </>
       ) : (
         <>
-          <p className="text-stone-500">
+          <p className="text-[var(--text-2)]">
             Your itinerary hasn&apos;t been generated yet.
           </p>
           {error && (
-            <p className="mt-2 text-sm text-red-600">{error}</p>
+            <p className="mt-2 text-sm text-[var(--error)]">{error}</p>
           )}
           <button
             onClick={handleGenerate}
-            className="mt-6 rounded-lg bg-stone-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-stone-700"
+            className="mt-6 rounded-lg bg-[var(--cta)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--cta-h)]"
           >
             Generate Itinerary
           </button>

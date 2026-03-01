@@ -71,17 +71,17 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 py-12 px-4">
+    <div className="min-h-screen bg-[var(--bg)] py-12 px-4">
       <div className="mx-auto max-w-lg">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-semibold tracking-tight text-stone-900">ando</h1>
-          <p className="mt-2 text-stone-500">Tell us how you like to travel</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-[var(--text)]">ando</h1>
+          <p className="mt-2 text-[var(--text-2)]">Tell us how you like to travel</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Travel pace */}
           <fieldset>
-            <legend className="text-sm font-medium text-stone-700">Travel pace</legend>
+            <legend className="text-sm font-medium text-[var(--text)]">Travel pace</legend>
             <div className="mt-3 grid grid-cols-3 gap-3">
               {([
                 { value: 'slow', label: 'Slow', sub: '2–3 things/day' },
@@ -92,8 +92,8 @@ export default function OnboardingPage() {
                   key={opt.value}
                   className={`flex cursor-pointer flex-col items-center rounded-lg border p-4 text-center transition-colors ${
                     pace === opt.value
-                      ? 'border-stone-900 bg-stone-900 text-white'
-                      : 'border-stone-200 bg-white text-stone-700 hover:border-stone-400'
+                      ? 'border-[var(--cta)] bg-[var(--cta)] text-white'
+                      : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--text)] hover:border-[var(--border-hi)]'
                   }`}
                 >
                   <input
@@ -105,7 +105,7 @@ export default function OnboardingPage() {
                     className="sr-only"
                   />
                   <span className="text-sm font-medium">{opt.label}</span>
-                  <span className={`mt-1 text-xs ${pace === opt.value ? 'text-stone-300' : 'text-stone-400'}`}>
+                  <span className={`mt-1 text-xs ${pace === opt.value ? 'text-[var(--text-3)]' : 'text-[var(--text-3)]'}`}>
                     {opt.sub}
                   </span>
                 </label>
@@ -115,7 +115,7 @@ export default function OnboardingPage() {
 
           {/* Budget level */}
           <fieldset>
-            <legend className="text-sm font-medium text-stone-700">Budget level</legend>
+            <legend className="text-sm font-medium text-[var(--text)]">Budget level</legend>
             <div className="mt-3 grid grid-cols-3 gap-3">
               {([
                 { value: 'budget', label: 'Budget', sub: 'Hostels & street food' },
@@ -126,8 +126,8 @@ export default function OnboardingPage() {
                   key={opt.value}
                   className={`flex cursor-pointer flex-col items-center rounded-lg border p-4 text-center transition-colors ${
                     budget === opt.value
-                      ? 'border-stone-900 bg-stone-900 text-white'
-                      : 'border-stone-200 bg-white text-stone-700 hover:border-stone-400'
+                      ? 'border-[var(--cta)] bg-[var(--cta)] text-white'
+                      : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--text)] hover:border-[var(--border-hi)]'
                   }`}
                 >
                   <input
@@ -139,7 +139,7 @@ export default function OnboardingPage() {
                     className="sr-only"
                   />
                   <span className="text-sm font-medium">{opt.label}</span>
-                  <span className={`mt-1 text-xs ${budget === opt.value ? 'text-stone-300' : 'text-stone-400'}`}>
+                  <span className={`mt-1 text-xs ${budget === opt.value ? 'text-[var(--text-3)]' : 'text-[var(--text-3)]'}`}>
                     {opt.sub}
                   </span>
                 </label>
@@ -149,9 +149,9 @@ export default function OnboardingPage() {
 
           {/* Interests */}
           <fieldset>
-            <legend className="text-sm font-medium text-stone-700">
+            <legend className="text-sm font-medium text-[var(--text)]">
               Interests{' '}
-              <span className="font-normal text-stone-400">— pick any</span>
+              <span className="font-normal text-[var(--text-3)]">— pick any</span>
             </legend>
             <div className="mt-3 flex flex-wrap gap-2">
               {INTERESTS.map(opt => (
@@ -159,8 +159,8 @@ export default function OnboardingPage() {
                   key={opt.value}
                   className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors ${
                     interests.includes(opt.value)
-                      ? 'border-stone-900 bg-stone-900 text-white'
-                      : 'border-stone-200 bg-white text-stone-700 hover:border-stone-400'
+                      ? 'border-[var(--cta)] bg-[var(--cta)] text-white'
+                      : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--text)] hover:border-[var(--border-hi)]'
                   }`}
                 >
                   <input
@@ -177,9 +177,9 @@ export default function OnboardingPage() {
 
           {/* Dietary restrictions */}
           <fieldset>
-            <legend className="text-sm font-medium text-stone-700">
+            <legend className="text-sm font-medium text-[var(--text)]">
               Dietary restrictions{' '}
-              <span className="font-normal text-stone-400">— pick any that apply</span>
+              <span className="font-normal text-[var(--text-3)]">— pick any that apply</span>
             </legend>
             <div className="mt-3 flex flex-wrap gap-2">
               {DIETARY.map(opt => (
@@ -187,8 +187,8 @@ export default function OnboardingPage() {
                   key={opt.value}
                   className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors ${
                     dietary.includes(opt.value)
-                      ? 'border-stone-900 bg-stone-900 text-white'
-                      : 'border-stone-200 bg-white text-stone-700 hover:border-stone-400'
+                      ? 'border-[var(--cta)] bg-[var(--cta)] text-white'
+                      : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--text)] hover:border-[var(--border-hi)]'
                   }`}
                 >
                   <input
@@ -204,13 +204,13 @@ export default function OnboardingPage() {
           </fieldset>
 
           {error && (
-            <p className="text-sm text-red-600">{error}</p>
+            <p className="text-sm text-[var(--error)]">{error}</p>
           )}
 
           <button
             type="submit"
             disabled={saving}
-            className="w-full rounded-lg bg-stone-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-stone-700 disabled:opacity-50"
+            className="w-full rounded-lg bg-[var(--cta)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--cta-h)] disabled:opacity-50"
           >
             {saving ? 'Saving…' : 'Start planning'}
           </button>

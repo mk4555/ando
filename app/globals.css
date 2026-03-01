@@ -21,6 +21,7 @@
   --cta:       #3A5C92;
   --cta-h:     #2B4C7E;
   --cta-glow:  rgba(58,92,146,0.22);
+  --error:     #C0392B;
   --shadow-sm: 0 1px 4px rgba(26,34,52,0.06), 0 4px 16px rgba(26,34,52,0.06);
   --shadow-md: 0 2px 8px rgba(26,34,52,0.06), 0 8px 32px rgba(26,34,52,0.10);
   --shadow-lg: 0 4px 16px rgba(26,34,52,0.06), 0 20px 60px rgba(26,34,52,0.13);

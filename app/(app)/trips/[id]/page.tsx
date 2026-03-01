@@ -42,23 +42,23 @@ export default async function TripPage({
     .maybeSingle()
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-[var(--bg)]">
       <div className="mx-auto max-w-2xl px-4 py-12">
         <Link
           href="/dashboard"
-          className="text-sm text-stone-500 hover:text-stone-700"
+          className="text-sm text-[var(--text-2)] hover:text-[var(--text)]"
         >
           ← My trips
         </Link>
 
         <div className="mt-6">
-          <h1 className="text-3xl font-semibold tracking-tight text-stone-900">
+          <h1 className="text-3xl font-semibold tracking-tight text-[var(--text)]">
             {trip.destination}
           </h1>
           {trip.title && (
-            <p className="mt-1 text-stone-500">{trip.title}</p>
+            <p className="mt-1 text-[var(--text-2)]">{trip.title}</p>
           )}
-          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-500">
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[var(--text-2)]">
             <span>
               {formatDate(trip.start_date)} – {formatDate(trip.end_date)}
             </span>
@@ -83,8 +83,8 @@ export default async function TripPage({
         </div>
 
         {/* Share link */}
-        <div className="mt-10 border-t border-stone-100 pt-6">
-          <p className="text-xs text-stone-400">
+        <div className="mt-10 border-t border-[var(--border)] pt-6">
+          <p className="text-xs text-[var(--text-3)]">
             Anyone with the link can view this itinerary in read-only mode.
           </p>
           <div className="mt-2">
