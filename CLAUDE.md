@@ -55,11 +55,11 @@ Everything in this plan is chosen to answer that question as fast as possible.
 
 **Immediate next actions:**
 
-1. Run `supabase db push` (or apply migration 002 in Supabase dashboard SQL editor) to add share_token
-2. Add `NEXT_PUBLIC_SENTRY_DSN` to Vercel env vars — get DSN from sentry.io project settings
-3. Add `NEXT_PUBLIC_APP_URL=https://your-vercel-url.app` to Vercel env vars (share links use this)
-4. Run Design Step 1 Claude Code prompt — rebuild landing page against design reference
-5. Once landing page confirmed, invite 3–5 friends
+1. ✅ Run `supabase db push` (or apply migration 002 in Supabase dashboard SQL editor) to add share_token
+2. ✅ Add `NEXT_PUBLIC_SENTRY_DSN` to Vercel env vars — get DSN from sentry.io project settings
+3. ✅ Add `NEXT_PUBLIC_APP_URL=https://your-vercel-url.app` to Vercel env vars (share links use this)
+4. ✅ Run Design Step 1 Claude Code prompt — rebuild landing page against design reference
+5. Invite 3–5 friends — pending until all design progress (Steps 2–4) is complete
 
 **Key decisions already made — do not revisit:**
 
@@ -681,6 +681,7 @@ The destination carousel uses `requestAnimationFrame` at `SPEED = 0.5 px/frame` 
 | Feb 2026 | Removed search bar from landing page | The search bar collected destination + dates but couldn't act on them — users still had to complete a full trip form after login. Two data entry points with no value from the first. One CTA → OAuth → form is a tighter, lossless funnel. |
 | Feb 2026 | Added social proof (avatar stack + trip count) above hero CTA | Static social proof ("140+ trips planned this month") removes the empty-page problem for a friends-stage app with no credibility signals. Update the number manually as real usage grows; replace with live count when analytics are wired. |
 | Feb 2026 | Landing page CSS written mobile-first | Default styles target mobile (≤ 768px). Desktop overrides use `@media (min-width: 769px)`. Reference HTML is desktop-first for design review only — implementation inverts the breakpoint direction. |
+| Mar 2026 | Landing page lives at `/` not `/login`, always public | Authenticated users need to share the landing page without logging out. `/` renders the marketing page unconditionally. Middleware only protects `/dashboard`, `/trips/*`, `/onboarding`. `/login` is the OAuth trigger only and redirects authenticated users away. |
 
 ---
 
@@ -735,5 +736,5 @@ Date strings from Supabase (`YYYY-MM-DD`) must always have `T00:00:00` appended 
 ---
 
 _Maintained by: Ando Engineering_  
-_Last updated: 2026-02-28 — Design reference v1 updated (search bar removed, social proof added). Mobile-first approach confirmed. Design Step 1 prompt finalized. Awaiting Claude Code implementation._  
-_Next review: After Design Step 1 confirmed by Claude Code_
+_Last updated: 2026-03-01 — Landing page moved to `/`, `/login` simplified to OAuth trigger, middleware updated. Architecture decision logged._
+_Next review: After Design Steps 2–4 complete_
