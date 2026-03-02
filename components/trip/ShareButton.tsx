@@ -25,7 +25,7 @@ export default function ShareButton({ url }: Props) {
   return (
     <button
       onClick={handleCopy}
-      className="text-sm text-[var(--text-2)] underline underline-offset-4 hover:text-[var(--text)]"
+      className="cursor-pointer text-sm text-[var(--text-2)] underline underline-offset-4 hover:text-[var(--text)]"
     >
       Copy share link
     </button>

@@ -1,10 +1,14 @@
 import Link from 'next/link'
+import { Settings } from 'lucide-react'
 import { createServerClient } from '@/lib/supabase/server'
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
 } from '@/components/ui/sidebar'
 import TripSwitcher from './TripSwitcher'
 import SidebarNav from './SidebarNav'
@@ -28,8 +32,25 @@ export default async function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader>
-        <TripSwitcher />
+      <SidebarHeader className="p-0 gap-0">
+        {/* Logo row — matches public Navbar height */}
+        <Link
+          href="/dashboard"
+          className="flex h-14 items-center border-b border-[var(--border)] px-4
+                     font-[var(--font-display)] text-[22px] font-medium tracking-[-0.4px]
+                     text-[var(--text)] no-underline
+                     group-data-[collapsible=icon]:hidden"
+        >
+          and<span className="text-[var(--accent)]">o</span>
+        </Link>
+        {/* Compact logo for icon mode */}
+        <div className="hidden h-14 items-center justify-center border-b border-[var(--border)]
+                        group-data-[collapsible=icon]:flex">
+          <span className="font-[var(--font-display)] text-[22px] font-medium text-[var(--accent)]">o</span>
+        </div>
+        <div className="px-2 py-2">
+          <TripSwitcher />
+        </div>
       </SidebarHeader>
 
       <SidebarContent>
@@ -37,30 +58,35 @@ export default async function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="flex flex-col gap-1 px-1 pb-1">
-          <div className="flex items-center gap-2 px-2 py-1.5">
-            {profile?.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={profile.avatar_url}
-                alt=""
-                className="h-6 w-6 shrink-0 rounded-full object-cover"
-              />
-            ) : (
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--accent-s)] text-xs font-medium text-[var(--accent)]">
-                {displayName.charAt(0).toUpperCase()}
-              </div>
-            )}
-            <span className="truncate text-sm text-[var(--text-2)]">{displayName}</span>
-          </div>
-          <Link
-            href="/onboarding"
-            className="rounded-md px-2 py-1.5 text-sm text-[var(--text-2)] transition-colors hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]"
-          >
-            Preferences
-          </Link>
+        <SidebarMenu>
+          {/* User info row */}
+          <SidebarMenuItem>
+            <SidebarMenuButton className="pointer-events-none">
+              {profile?.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.avatar_url} alt="" className="h-5 w-5 rounded-full object-cover" />
+              ) : (
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--accent-s)] text-xs font-medium text-[var(--accent)]">
+                  {displayName.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <span className="truncate text-sm text-[var(--text-2)]">{displayName}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          {/* Preferences */}
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Preferences" className="cursor-pointer">
+              <Link href="/onboarding">
+                <Settings className="h-4 w-4" />
+                <span>Preferences</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          {/* Sign out */}
           <SignOutButton />
-        </div>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   )

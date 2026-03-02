@@ -1,7 +1,9 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar'
 
 export default function SignOutButton() {
   const router = useRouter()
@@ -13,11 +15,11 @@ export default function SignOutButton() {
   }
 
   return (
-    <button
-      onClick={handleSignOut}
-      className="w-full rounded-md px-2 py-1.5 text-left text-sm text-[var(--text-2)] transition-colors hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]"
-    >
-      Sign out
-    </button>
+    <SidebarMenuItem>
+      <SidebarMenuButton onClick={handleSignOut} tooltip="Sign out" className="cursor-pointer">
+        <LogOut className="h-4 w-4" />
+        <span>Sign out</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
   )
 }

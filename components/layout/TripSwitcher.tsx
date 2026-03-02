@@ -16,6 +16,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { Trip } from '@/lib/types'
 
+function tripLabel(trip: Trip): string {
+  return trip.country_code ? `${trip.destination} - ${trip.country_code}` : trip.destination
+}
+
 async function fetchTrips(): Promise<Trip[]> {
   const res = await fetch('/api/trips')
   if (!res.ok) return []
@@ -47,14 +51,14 @@ export default function TripSwitcher() {
     router.push(`/trips/${tripId}/${getSubPath()}`)
   }
 
-  const label = currentTrip ? currentTrip.destination : 'My Trips'
+  const label = currentTrip ? tripLabel(currentTrip) : 'My Trips'
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton className="font-medium">
+            <SidebarMenuButton className="cursor-pointer font-medium">
               <span className="truncate">{label}</span>
               <svg
                 className="ml-auto shrink-0"
@@ -78,13 +82,13 @@ export default function TripSwitcher() {
               <DropdownMenuItem
                 key={trip.id}
                 onSelect={() => navigateToTrip(trip.id)}
-                className={trip.id === currentTripId ? 'font-medium' : ''}
+                className={`cursor-pointer${trip.id === currentTripId ? ' font-medium' : ''}`}
               >
-                <span className="truncate">{trip.destination}</span>
+                <span className="truncate">{tripLabel(trip)}</span>
               </DropdownMenuItem>
             ))}
             {trips.length > 0 && <DropdownMenuSeparator />}
-            <DropdownMenuItem onSelect={() => router.push('/trips/new')}>
+            <DropdownMenuItem onSelect={() => router.push('/trips/new')} className="cursor-pointer">
               <span className="text-[var(--accent)]">＋ New trip</span>
             </DropdownMenuItem>
           </DropdownMenuContent>

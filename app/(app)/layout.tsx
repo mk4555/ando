@@ -12,7 +12,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <AppSidebar />
         </Suspense>
         <SidebarInset>
-          <header className="flex h-12 shrink-0 items-center px-4 border-b border-[var(--border)]">
+          <header className="flex h-14 shrink-0 items-center px-4 border-b border-[var(--border)]">
             <SidebarTrigger />
           </header>
           <main className="flex-1">{children}</main>
