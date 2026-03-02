@@ -2,9 +2,15 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function proxy(request: NextRequest) {
-  // Start with a passthrough response that carries the request cookies forward.
-  // The Supabase client may call setAll() to refresh the session token; when it
-  // does we replace supabaseResponse so the updated cookies are forwarded.
+  const { pathname } = request.nextUrl
+
+  // Keep route transitions cheap: do not verify auth on every request.
+  // Protected app routes are gated in app/(app)/layout.tsx.
+  if (pathname !== '/login') {
+    return NextResponse.next({ request })
+  }
+
+  // Only the /login route needs an auth check to redirect signed-in users.
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -26,33 +32,11 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  // IMPORTANT: always use getUser(), never getSession(), to avoid trusting
-  // unverified JWT data from the client.
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
-
-  const isPublicRoute =
-    pathname === '/' ||
-    pathname.startsWith('/explore') ||
-    pathname === '/login' ||
-    pathname === '/callback' ||
-    pathname.startsWith('/shared/') ||
-    pathname.startsWith('/api/') ||
-    pathname.startsWith('/_next/') ||
-    pathname.match(/\.(ico|svg|png|jpg|jpeg|webp)$/)
-
-  // Unauthenticated user hitting a protected route → send to login
-  if (!user && !isPublicRoute) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
-  }
-
-  // Authenticated user hitting the login page → send to dashboard
-  if (user && pathname === '/login') {
+  if (user) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

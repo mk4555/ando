@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
+import { LayoutDashboard, Plus, Compass, CalendarDays, Wallet, Plane, BedDouble } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -11,10 +13,10 @@ import {
   SidebarMenuButton,
 } from '@/components/ui/sidebar'
 
-const APP_NAV = [
-  { label: 'Dashboard', href: '/dashboard', icon: '📊' },
-  { label: 'New Trip', href: '/trips/new', icon: '＋' },
-  { label: 'Explore', href: '/explore', icon: '🌍' },
+const APP_NAV: { label: string; href: string; Icon: LucideIcon }[] = [
+  { label: 'Dashboard', href: '/dashboard', Icon: LayoutDashboard },
+  { label: 'New Trip', href: '/trips/new', Icon: Plus },
+  { label: 'Explore', href: '/explore', Icon: Compass },
 ]
 
 export default function SidebarNav() {
@@ -24,48 +26,29 @@ export default function SidebarNav() {
 
   const isTripRoute = !!tripId && pathname.includes(`/trips/${tripId}`)
 
-  const TRIP_NAV = tripId
+  const TRIP_NAV: { label: string; href: string; Icon: LucideIcon }[] = tripId
     ? [
-        { label: 'Itinerary', href: `/trips/${tripId}/itinerary`, icon: '📅' },
-        { label: 'Budget', href: `/trips/${tripId}/budget`, icon: '💰' },
-        { label: 'Flights', href: `/trips/${tripId}/flight`, icon: '✈' },
-        { label: 'Stays', href: `/trips/${tripId}/stay`, icon: '🏨' },
+        { label: 'Itinerary', href: `/trips/${tripId}/itinerary`, Icon: CalendarDays },
+        { label: 'Budget', href: `/trips/${tripId}/budget`, Icon: Wallet },
+        { label: 'Flights', href: `/trips/${tripId}/flight`, Icon: Plane },
+        { label: 'Stays', href: `/trips/${tripId}/stay`, Icon: BedDouble },
       ]
     : []
 
-  if (isTripRoute) {
-    return (
-      <SidebarGroup>
-        <SidebarGroupLabel>Trip</SidebarGroupLabel>
-        <SidebarGroupContent>
-          <SidebarMenu>
-            {TRIP_NAV.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton asChild isActive={pathname === item.href}>
-                  <Link href={item.href}>
-                    <span aria-hidden="true">{item.icon}</span>
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
-    )
-  }
+  const navItems = isTripRoute ? TRIP_NAV : APP_NAV
+  const groupLabel = isTripRoute ? 'Trip' : 'Navigation'
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+      <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {APP_NAV.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton asChild isActive={pathname === item.href}>
-                <Link href={item.href}>
-                  <span aria-hidden="true">{item.icon}</span>
-                  <span>{item.label}</span>
+          {navItems.map(({ label, href, Icon }) => (
+            <SidebarMenuItem key={href}>
+              <SidebarMenuButton asChild isActive={pathname === href}>
+                <Link href={href}>
+                  <Icon className="h-4 w-4" />
+                  <span>{label}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

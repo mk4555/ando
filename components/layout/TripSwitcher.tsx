@@ -2,6 +2,7 @@
 
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
+import { Luggage, ChevronsUpDown } from 'lucide-react'
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -17,7 +18,8 @@ import {
 import type { Trip } from '@/lib/types'
 
 function tripLabel(trip: Trip): string {
-  return trip.country_code ? `${trip.destination} - ${trip.country_code}` : trip.destination
+  const name = trip.title || trip.destination
+  return trip.country_code ? `${name} - ${trip.country_code}` : name
 }
 
 async function fetchTrips(): Promise<Trip[]> {
@@ -58,23 +60,10 @@ export default function TripSwitcher() {
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton className="cursor-pointer font-medium">
-              <span className="truncate">{label}</span>
-              <svg
-                className="ml-auto shrink-0"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="m7 15 5 5 5-5" />
-                <path d="m7 9 5-5 5 5" />
-              </svg>
+            <SidebarMenuButton tooltip={label} className="cursor-pointer font-medium">
+              <Luggage className="hidden h-4 w-4 shrink-0 group-data-[collapsible=icon]:block" />
+              <span className="truncate group-data-[collapsible=icon]:hidden">{label}</span>
+              <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 group-data-[collapsible=icon]:hidden" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom" align="start" className="w-56">
