@@ -19,10 +19,8 @@ export default function PageShell({
   className = '',
 }: PageShellProps) {
   return (
-    <div className="min-h-screen bg-[var(--bg)]">
-      <div className={`mx-auto ${WIDTH_CLASS[maxWidth]} px-4 ${paddingY} ${className}`}>
-        {children}
-      </div>
+    <div className={`mx-auto ${WIDTH_CLASS[maxWidth]} px-4 ${paddingY} ${className}`}>
+      {children}
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import styles from './(auth)/login/login.module.css'
+import styles from '../(auth)/login/login.module.css'
 import SignInButton from '@/components/landing/SignInButton'
 import DestinationCarousel from '@/components/landing/DestinationCarousel'
 import { createServerClient } from '@/lib/supabase/server'
