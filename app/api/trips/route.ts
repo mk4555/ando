@@ -33,6 +33,7 @@ export async function POST(req: Request) {
   const body = await req.json()
   const {
     destination,
+    country_code,
     title,
     start_date,
     end_date,
@@ -76,6 +77,7 @@ export async function POST(req: Request) {
     .insert({
       user_id:        user.id,
       destination:    destination.trim(),
+      country_code:   country_code ?? null,
       title:          title?.trim() || null,
       start_date,
       end_date,

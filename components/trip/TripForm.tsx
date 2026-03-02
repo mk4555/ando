@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FieldError, FieldLabel, FormInput, FormSelect } from '@/components/ui/form'
+import DestinationAutocomplete from './DestinationAutocomplete'
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY', 'SGD', 'CHF']
 
@@ -26,6 +27,7 @@ interface FormErrors {
 export default function TripForm() {
   const router = useRouter()
   const [destination, setDestination] = useState('')
+  const [countryCode, setCountryCode] = useState('')
   const [title, setTitle] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -81,6 +83,7 @@ export default function TripForm() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         destination: destination.trim(),
+        country_code: countryCode || null,
         title: title.trim() || null,
         start_date: startDate,
         end_date: endDate,
@@ -108,11 +111,10 @@ export default function TripForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <FieldLabel required>Destination</FieldLabel>
-        <FormInput
-          type="text"
+        <DestinationAutocomplete
           value={destination}
-          onChange={e => setDestination(e.target.value)}
-          placeholder="e.g. Tokyo, Japan"
+          onChange={(val, cc) => { setDestination(val); setCountryCode(cc) }}
+          error={errors.destination}
         />
         <FieldError message={errors.destination} />
       </div>
