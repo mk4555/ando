@@ -1,10 +1,10 @@
-import { redirect } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase/server'
 import ItinerarySection from '@/components/itinerary/ItinerarySection'
 import ShareButton from '@/components/trip/ShareButton'
 import TripHeaderSummary from '@/components/trip/TripHeaderSummary'
 import PageShell from '@/components/ui/PageShell'
 import type { Itinerary } from '@/lib/types'
+import { getAuthedTrip } from '@/lib/trips/server'
 
 export default async function ItineraryPage({
   params,
@@ -12,20 +12,8 @@ export default async function ItineraryPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const { trip } = await getAuthedTrip(id)
   const supabase = await createServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) redirect('/login')
-
-  const { data: trip } = await supabase
-    .from('trips')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (!trip || trip.user_id !== user.id) redirect('/dashboard')
 
   const { data: itinerary } = await supabase
     .from('itineraries')

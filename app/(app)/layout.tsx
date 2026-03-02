@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
-import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import AppSidebar from '@/components/layout/AppSidebar'
 import QueryProvider from '@/components/providers/QueryProvider'
@@ -14,16 +14,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect('/login')
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('display_name, avatar_url')
+    .eq('id', user.id)
+    .single()
+
   return (
     <QueryProvider>
       <SidebarProvider className="h-svh overflow-hidden">
         <Suspense>
-          <AppSidebar />
+          <AppSidebar userEmail={user.email ?? null} profile={profile ?? null} />
         </Suspense>
         <SidebarInset>
-          <header className="shrink-0 flex h-14 items-center border-b border-[var(--border)] bg-[var(--bg)] px-4">
-            <SidebarTrigger />
-          </header>
           <main className="flex-1 min-h-0 overflow-y-auto">{children}</main>
         </SidebarInset>
         <Toaster />

@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { Settings } from 'lucide-react'
-import { createServerClient } from '@/lib/supabase/server'
 import {
   Sidebar,
   SidebarContent,
@@ -9,45 +8,44 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarTrigger,
 } from '@/components/ui/sidebar'
 import TripSwitcher from './TripSwitcher'
 import SidebarNav from './SidebarNav'
 import SignOutButton from './SignOutButton'
+import SidebarToggleLogo from './SidebarToggleLogo'
 
-export default async function AppSidebar() {
-  const supabase = await createServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+interface SidebarProfile {
+  display_name: string | null
+  avatar_url: string | null
+}
 
-  const { data: profile } = user
-    ? await supabase
-        .from('profiles')
-        .select('display_name, avatar_url')
-        .eq('id', user.id)
-        .single()
-    : { data: null }
+interface AppSidebarProps {
+  userEmail: string | null
+  profile: SidebarProfile | null
+}
 
-  const displayName = profile?.display_name ?? user?.email ?? 'Traveler'
+export default function AppSidebar({ userEmail, profile }: AppSidebarProps) {
+
+  const displayName = profile?.display_name ?? userEmail ?? 'Traveler'
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-0 gap-0">
         {/* Logo row — matches public Navbar height */}
-        <Link
-          href="/dashboard"
-          className="flex h-14 items-center border-b border-[var(--border)] px-4
-                     font-[var(--font-display)] text-[22px] font-medium tracking-[-0.4px]
-                     text-[var(--text)] no-underline
-                     group-data-[collapsible=icon]:hidden"
-        >
-          and<span className="text-[var(--accent)]">o</span>
-        </Link>
-        {/* Compact logo for icon mode */}
-        <div className="hidden h-14 items-center justify-center border-b border-[var(--border)]
-                        group-data-[collapsible=icon]:flex">
-          <span className="font-[var(--font-display)] text-[22px] font-medium text-[var(--accent)]">o</span>
+        <div className="flex h-14 items-center justify-between border-b border-[var(--border)] px-4
+                        group-data-[collapsible=icon]:hidden">
+          <Link
+            href="/"
+            className="font-[var(--font-display)] text-[22px] font-medium tracking-[-0.4px]
+                       text-[var(--text)] no-underline"
+          >
+            and<span className="text-[var(--accent)]">o</span>
+          </Link>
+          <SidebarTrigger />
         </div>
+        {/* Compact logo for icon mode — clicking expands the sidebar */}
+        <SidebarToggleLogo />
         <div className="px-2 py-2">
           <TripSwitcher />
         </div>

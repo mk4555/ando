@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
@@ -38,11 +38,13 @@ export default function TripSwitcher() {
   const { data: trips = [] } = useQuery({
     queryKey: ['trips'],
     queryFn: fetchTrips,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   })
 
   const currentTrip = trips.find((t) => t.id === currentTripId)
 
-  // When switching trips, preserve the sub-path segment if we're in a trip route
   function getSubPath(): string {
     if (!currentTripId) return 'itinerary'
     const match = pathname.match(/\/trips\/[^/]+\/(.+)/)
@@ -78,7 +80,7 @@ export default function TripSwitcher() {
             ))}
             {trips.length > 0 && <DropdownMenuSeparator />}
             <DropdownMenuItem onSelect={() => router.push('/trips/new')} className="cursor-pointer">
-              <span className="text-[var(--accent)]">＋ New trip</span>
+              <span className="text-[var(--accent)]">+ New trip</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
