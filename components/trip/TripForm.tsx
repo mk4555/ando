@@ -3,9 +3,14 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FieldError, FieldLabel, FormInput, FormSelect } from '@/components/ui/form'
+import { Button } from '@/components/ui/button'
 import DestinationAutocomplete from './DestinationAutocomplete'
 
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY', 'SGD', 'CHF']
+function formatWithCommas(value: string | number): string {
+  if (value === '' || value === undefined) return ''
+  const n = typeof value === 'string' ? Number(value) : value
+  return isNaN(n) ? String(value) : n.toLocaleString()
+}
 
 function todayLocalStr() {
   const d = new Date()
@@ -33,7 +38,6 @@ export default function TripForm() {
   const [endDate, setEndDate] = useState('')
   const [travelerCount, setTravelerCount] = useState(1)
   const [budget, setBudget] = useState('')
-  const [currency, setCurrency] = useState('USD')
   const [visibility, setVisibility] = useState<'private' | 'unlisted' | 'public'>('private')
   const [errors, setErrors] = useState<FormErrors>({})
   const [submitting, setSubmitting] = useState(false)
@@ -89,7 +93,7 @@ export default function TripForm() {
         end_date: endDate,
         traveler_count: travelerCount,
         budget_total: budget ? Number(budget) : null,
-        currency,
+        currency: 'USD',
         visibility,
       }),
     })
@@ -110,16 +114,6 @@ export default function TripForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <FieldLabel required>Destination</FieldLabel>
-        <DestinationAutocomplete
-          value={destination}
-          onChange={(val, cc) => { setDestination(val); setCountryCode(cc) }}
-          error={errors.destination}
-        />
-        <FieldError message={errors.destination} />
-      </div>
-
-      <div>
         <FieldLabel optionalHint="optional">Trip name</FieldLabel>
         <FormInput
           type="text"
@@ -127,6 +121,16 @@ export default function TripForm() {
           onChange={e => setTitle(e.target.value)}
           placeholder="e.g. Anniversary trip"
         />
+      </div>
+
+      <div>
+        <FieldLabel required>Destination</FieldLabel>
+        <DestinationAutocomplete
+          value={destination}
+          onChange={(val, cc) => { setDestination(val); setCountryCode(cc) }}
+          error={errors.destination}
+        />
+        <FieldError message={errors.destination} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -158,11 +162,13 @@ export default function TripForm() {
       <div>
         <FieldLabel required>Travelers</FieldLabel>
         <FormInput
-          type="number"
-          min={1}
-          max={20}
-          value={travelerCount}
-          onChange={e => setTravelerCount(Math.max(1, Number(e.target.value)))}
+          type="text"
+          inputMode="numeric"
+          value={formatWithCommas(travelerCount)}
+          onChange={e => {
+            const raw = parseInt(e.target.value.replace(/,/g, ''), 10)
+            if (!isNaN(raw)) setTravelerCount(Math.max(1, Math.min(20, raw)))
+          }}
           className="w-28"
         />
         <FieldError message={errors.traveler_count} />
@@ -170,24 +176,15 @@ export default function TripForm() {
 
       <div>
         <FieldLabel optionalHint="optional">Total budget</FieldLabel>
-        <div className="mt-1.5 flex gap-2">
-          <FormSelect
-            value={currency}
-            onChange={e => setCurrency(e.target.value)}
-            className="mt-0 w-auto px-3"
-          >
-            {CURRENCIES.map(c => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </FormSelect>
-          <FormInput
-            type="number"
-            min={0}
-            step="1"
-            value={budget}
-            onChange={e => setBudget(e.target.value)}
-            placeholder="e.g. 3000"
-            className="mt-0 flex-1"
+        <div className="mt-1.5 flex rounded-lg border border-[var(--border)] bg-[var(--bg-card)] focus-within:border-[var(--border-hi)] focus-within:ring-2 focus-within:ring-[var(--accent-s)]">
+          <span className="flex items-center pl-4 pr-2 text-sm text-[var(--text-3)] select-none">$</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={budget ? formatWithCommas(budget) : ''}
+            onChange={e => setBudget(e.target.value.replace(/[^0-9]/g, ''))}
+            placeholder="e.g. 3,000"
+            className="flex-1 rounded-r-lg bg-transparent py-2.5 pr-4 text-sm text-[var(--text)] placeholder-[var(--text-3)] outline-none"
           />
         </div>
       </div>
@@ -208,13 +205,9 @@ export default function TripForm() {
         <p className="text-sm text-[var(--error)]">{errors.form}</p>
       )}
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className="w-full rounded-lg bg-[var(--cta)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--cta-h)] disabled:opacity-50"
-      >
+      <Button type="submit" disabled={submitting} size="lg" className="w-full">
         {submitting ? 'Creating trip...' : 'Create trip'}
-      </button>
+      </Button>
     </form>
   )
 }

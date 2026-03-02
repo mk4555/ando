@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import type { Itinerary, Trip } from '@/lib/types'
 import ItineraryView from './ItineraryView'
 import Card from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import Spinner from '@/components/ui/Spinner'
 
 interface Props {
   trip: Trip
@@ -47,13 +49,9 @@ export default function ItinerarySection({ trip, itinerary }: Props) {
         <ItineraryView itinerary={itinerary} currency={trip.currency} />
 
         <div className="mt-8 flex flex-col items-start gap-2">
-          <button
-            onClick={handleGenerate}
-            disabled={isGenerating}
-            className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg)] disabled:opacity-50"
-          >
+          <Button variant="outline" onClick={handleGenerate} disabled={isGenerating}>
             {isGenerating ? 'Regenerating...' : 'Regenerate itinerary'}
-          </button>
+          </Button>
           {error && <p className="text-sm text-[var(--error)]">{error}</p>}
         </div>
       </div>
@@ -64,7 +62,7 @@ export default function ItinerarySection({ trip, itinerary }: Props) {
     <Card className="p-8 text-center">
       {isGenerating ? (
         <>
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-[var(--border)] border-t-[var(--text)]" />
+          <Spinner className="mx-auto mb-4" />
           <p className="text-[var(--text-2)]">Ando is planning your trip...</p>
           <p className="mt-1 text-sm text-[var(--text-3)]">This usually takes 15-30 seconds.</p>
         </>
@@ -76,12 +74,9 @@ export default function ItinerarySection({ trip, itinerary }: Props) {
           {error && (
             <p className="mt-2 text-sm text-[var(--error)]">{error}</p>
           )}
-          <button
-            onClick={handleGenerate}
-            className="mt-6 rounded-lg bg-[var(--cta)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--cta-h)]"
-          >
+          <Button size="lg" onClick={handleGenerate} className="mt-6">
             Generate Itinerary
-          </button>
+          </Button>
         </>
       )}
     </Card>

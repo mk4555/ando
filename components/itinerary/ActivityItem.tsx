@@ -1,11 +1,11 @@
 import type { Activity } from '@/lib/types'
 
 const CATEGORY_COLORS: Record<Activity['category'], string> = {
-  attraction:    'bg-blue-50 text-blue-700',
-  restaurant:    'bg-amber-50 text-amber-700',
+  attraction:    'bg-[var(--bg-subtle)] text-[var(--accent)]',
+  restaurant:    'bg-[var(--bg-subtle)] text-[var(--cta)]',
   transport:     'bg-[var(--bg-subtle)] text-[var(--text-2)]',
-  accommodation: 'bg-purple-50 text-purple-700',
-  experience:    'bg-emerald-50 text-emerald-700',
+  accommodation: 'bg-[var(--bg-subtle)] text-[var(--text)]',
+  experience:    'bg-[var(--bg-subtle)] text-[var(--accent-h)]',
 }
 
 interface Props {

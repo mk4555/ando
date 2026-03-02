@@ -1,19 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface Props {
   url: string
 }
 
 export default function ShareButton({ url }: Props) {
-  const [copied, setCopied] = useState(false)
-
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(url)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
     } catch {
       // Fallback: select the text for manual copy
       const input = document.createElement('input')
@@ -22,17 +18,16 @@ export default function ShareButton({ url }: Props) {
       input.select()
       document.execCommand('copy')
       document.body.removeChild(input)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
     }
+    toast('Link copied!')
   }
 
   return (
     <button
       onClick={handleCopy}
-      className="text-sm text-stone-500 underline underline-offset-4 hover:text-stone-700"
+      className="text-sm text-[var(--text-2)] underline underline-offset-4 hover:text-[var(--text)]"
     >
-      {copied ? 'Link copied!' : 'Copy share link'}
+      Copy share link
     </button>
   )
 }
