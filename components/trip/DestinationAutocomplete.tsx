@@ -6,11 +6,13 @@ import styles from './DestinationAutocomplete.module.css'
 interface Suggestion {
   label: string
   countryCode: string
+  lat?: number
+  lon?: number
 }
 
 interface Props {
   value: string
-  onChange: (value: string, countryCode: string) => void
+  onChange: (value: string, countryCode: string, lat?: number, lon?: number) => void
   error?: string
 }
 
@@ -66,7 +68,7 @@ export default function DestinationAutocomplete({ value, onChange, error }: Prop
   }, [])
 
   function select(s: Suggestion) {
-    onChange(s.label, s.countryCode)
+    onChange(s.label, s.countryCode, s.lat, s.lon)
     setSuggestions([])
     setOpen(false)
     setHighlighted(-1)
@@ -74,7 +76,7 @@ export default function DestinationAutocomplete({ value, onChange, error }: Prop
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value
-    onChange(val, '')
+    onChange(val, '', undefined, undefined)
     if (val.length < 2) {
       setSuggestions([])
       setOpen(false)

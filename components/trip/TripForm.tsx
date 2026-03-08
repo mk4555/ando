@@ -2,9 +2,14 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { FieldError, FieldLabel, FormInput, FormSelect } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import DestinationAutocomplete from './DestinationAutocomplete'
+import FlightSection from './FlightSection'
+import type { TripFlights } from '@/lib/types'
+
+const DestinationMap = dynamic(() => import('./DestinationMap'), { ssr: false })
 
 function formatWithCommas(value: string | number): string {
   if (value === '' || value === undefined) return ''
@@ -39,6 +44,8 @@ export default function TripForm() {
   const [travelerCount, setTravelerCount] = useState(1)
   const [budget, setBudget] = useState('')
   const [visibility, setVisibility] = useState<'private' | 'unlisted' | 'public'>('private')
+  const [flights, setFlights] = useState<TripFlights>({})
+  const [mapCoords, setMapCoords] = useState<{ lat: number; lon: number } | null>(null)
   const [errors, setErrors] = useState<FormErrors>({})
   const [submitting, setSubmitting] = useState(false)
 
@@ -95,6 +102,7 @@ export default function TripForm() {
         budget_total: budget ? Number(budget) : null,
         currency: 'USD',
         visibility,
+        flights,
       }),
     })
 
@@ -112,7 +120,19 @@ export default function TripForm() {
   const today = todayLocalStr()
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="flex h-full flex-col lg:flex-row">
+      {/* Left: independently scrollable form column */}
+      <div className="flex-1 overflow-y-auto px-6 py-8 lg:w-1/2 lg:flex-none">
+        <div className="mx-auto max-w-lg">
+          <div className="mb-6">
+            <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--text)]">
+              Plan a new trip
+            </h1>
+            <p className="mt-1 text-sm text-[var(--text-2)]">
+              Ando will build your itinerary once you&apos;ve created the trip.
+            </p>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <FieldLabel optionalHint="optional">Trip name</FieldLabel>
         <FormInput
@@ -127,7 +147,11 @@ export default function TripForm() {
         <FieldLabel required>Destination</FieldLabel>
         <DestinationAutocomplete
           value={destination}
-          onChange={(val, cc) => { setDestination(val); setCountryCode(cc) }}
+          onChange={(val, cc, lat, lon) => {
+            setDestination(val)
+            setCountryCode(cc)
+            setMapCoords(lat != null && lon != null ? { lat, lon } : null)
+          }}
           error={errors.destination}
         />
         <FieldError message={errors.destination} />
@@ -201,6 +225,14 @@ export default function TripForm() {
         </FormSelect>
       </div>
 
+      <div className="border-t border-[var(--border)] pt-6">
+        <h2 className="mb-1 font-display text-lg font-semibold text-[var(--text)]">
+          Flight details
+        </h2>
+        <p className="mb-5 text-sm text-[var(--text-3)]">Optional — add your flights now or later.</p>
+        <FlightSection value={flights} onChange={setFlights} disabled={submitting} />
+      </div>
+
       {errors.form && (
         <p className="text-sm text-[var(--error)]">{errors.form}</p>
       )}
@@ -209,5 +241,13 @@ export default function TripForm() {
         {submitting ? 'Creating trip...' : 'Create trip'}
       </Button>
     </form>
+        </div>
+      </div>
+
+      {/* Right: full-height map — desktop only */}
+      <div className="hidden h-full lg:block lg:w-1/2 lg:flex-none">
+        <DestinationMap coords={mapCoords} />
+      </div>
+    </div>
   )
 }

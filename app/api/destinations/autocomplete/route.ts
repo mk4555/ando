@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server'
 interface GeoapifyResult {
   formatted: string
   country_code: string
+  lat?: number
+  lon?: number
 }
 
 interface GeoapifyResponse {
@@ -36,6 +38,8 @@ export async function GET(req: Request) {
   const suggestions = (data.results ?? []).map((r) => ({
     label: r.formatted,
     countryCode: (r.country_code ?? '').toUpperCase(),
+    lat: r.lat,
+    lon: r.lon,
   }))
 
   return NextResponse.json(suggestions)

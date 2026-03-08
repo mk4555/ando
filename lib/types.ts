@@ -21,6 +21,25 @@ export interface TravelPreferences {
   accommodation?: 'hostel' | 'hotel' | 'airbnb'
 }
 
+export interface FlightLeg {
+  airline?: string
+  flight_number?: string
+  departure_airport?: string
+  arrival_airport?: string
+  departure_datetime?: string
+  arrival_datetime?: string
+  booking_reference?: string
+}
+
+export interface TripFlights {
+  outbound?: FlightLeg
+  return?: FlightLeg
+}
+
+export interface TripMetadata {
+  flights?: TripFlights
+}
+
 export type TripStatus = 'draft' | 'active' | 'completed' | 'archived'
 export type TripVisibility = 'private' | 'unlisted' | 'public'
 
@@ -38,7 +57,7 @@ export interface Trip {
   status: TripStatus
   visibility: TripVisibility
   share_token: string
-  metadata: Record<string, unknown>
+  metadata: TripMetadata
   created_at: string
   updated_at: string
 }

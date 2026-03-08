@@ -41,6 +41,7 @@ export async function POST(req: Request) {
     budget_total,
     currency = 'USD',
     visibility = 'private',
+    flights,
   } = body
 
   // Server-side validation — mirrors client rules exactly (Edge Case 004)
@@ -86,6 +87,7 @@ export async function POST(req: Request) {
       currency,
       visibility,
       status:         'draft',
+      metadata:       flights ? { flights } : {},
     })
     .select()
     .single()
