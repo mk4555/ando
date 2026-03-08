@@ -22,10 +22,10 @@ export default function DayCard({ day, currency }: Props) {
       <div className="border-b border-[var(--border)] px-6 py-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-3)]">
+            <span className="inline-flex items-center rounded-full bg-[var(--accent-s)] px-2.5 py-0.5 text-xs font-bold text-[var(--accent)]">
               Day {day.day}
-            </p>
-            <h3 className="mt-0.5 text-base font-semibold text-[var(--text)]">
+            </span>
+            <h3 className="mt-1 font-display text-lg font-semibold text-[var(--text)]">
               {day.theme}
             </h3>
             <p className="mt-0.5 text-sm text-[var(--text-2)]">{formatDayDate(day.date)}</p>
@@ -45,7 +45,7 @@ export default function DayCard({ day, currency }: Props) {
       {/* Activities */}
       <div className="px-6 pt-5">
         {day.activities.map((activity, i) => (
-          <ActivityItem key={i} activity={activity} currency={currency} />
+          <ActivityItem key={i} activity={activity} currency={currency} isLast={i === day.activities.length - 1} />
         ))}
       </div>
     </div>

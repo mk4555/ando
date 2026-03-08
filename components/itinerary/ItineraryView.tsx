@@ -13,9 +13,9 @@ export default function ItineraryView({ itinerary, currency }: Props) {
     <div>
       {/* Summary bar */}
       {totalCost > 0 && (
-        <div className="mb-6 flex items-center gap-2 text-sm text-stone-500">
+        <div className="mb-6 flex items-center gap-2 text-sm text-[var(--text-2)]">
           <span>Estimated total</span>
-          <span className="font-semibold text-stone-900">
+          <span className="font-semibold text-[var(--text)]">
             {currency} {totalCost.toLocaleString()}
           </span>
         </div>

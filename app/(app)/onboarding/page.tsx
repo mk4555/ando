@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { TravelStyle, TravelPreferences } from '@/lib/types'
 import PageShell from '@/components/ui/PageShell'
 import { ChoicePill } from '@/components/ui/form'
+import { Button } from '@/components/ui/button'
 
 const INTERESTS: { value: string; label: string }[] = [
   { value: 'food', label: 'Food & Dining' },
@@ -73,7 +74,9 @@ export default function OnboardingPage() {
   return (
     <PageShell maxWidth="lg" paddingY="py-12">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight text-[var(--text)]">ando</h1>
+        <h1 className="font-display text-4xl font-medium tracking-tight text-[var(--text)]">
+          and<span className="text-[var(--accent)]">o</span>
+        </h1>
         <p className="mt-2 text-[var(--text-2)]">Tell us how you like to travel</p>
       </div>
 
@@ -82,9 +85,9 @@ export default function OnboardingPage() {
           <legend className="text-sm font-medium text-[var(--text)]">Travel pace</legend>
           <div className="mt-3 grid grid-cols-3 gap-3">
             {([
-              { value: 'slow', label: 'Slow', sub: '2-3 things/day' },
-              { value: 'medium', label: 'Balanced', sub: '3-4 things/day' },
-              { value: 'fast', label: 'Packed', sub: '5+ things/day' },
+              { value: 'slow',   label: 'Slow',     emoji: '🌿', sub: '2-3 things/day' },
+              { value: 'medium', label: 'Balanced', emoji: '⚡', sub: '3-4 things/day' },
+              { value: 'fast',   label: 'Packed',   emoji: '🚀', sub: '5+ things/day'  },
             ] as const).map(opt => (
               <label
                 key={opt.value}
@@ -102,8 +105,9 @@ export default function OnboardingPage() {
                   onChange={() => setPace(opt.value)}
                   className="sr-only"
                 />
+                <span className="mb-1 text-2xl">{opt.emoji}</span>
                 <span className="text-sm font-medium">{opt.label}</span>
-                <span className="mt-1 text-xs text-[var(--text-3)]">{opt.sub}</span>
+                <span className={`mt-1 text-xs ${pace === opt.value ? 'opacity-75' : 'text-[var(--text-3)]'}`}>{opt.sub}</span>
               </label>
             ))}
           </div>
@@ -113,9 +117,9 @@ export default function OnboardingPage() {
           <legend className="text-sm font-medium text-[var(--text)]">Budget level</legend>
           <div className="mt-3 grid grid-cols-3 gap-3">
             {([
-              { value: 'budget', label: 'Budget', sub: 'Hostels & street food' },
-              { value: 'mid', label: 'Mid-range', sub: 'Hotels & restaurants' },
-              { value: 'luxury', label: 'Luxury', sub: 'Five-star everything' },
+              { value: 'budget',  label: 'Budget',    emoji: '🎒', sub: 'Hostels & street food' },
+              { value: 'mid',     label: 'Mid-range', emoji: '✨', sub: 'Hotels & restaurants'  },
+              { value: 'luxury',  label: 'Luxury',    emoji: '💎', sub: 'Five-star everything'  },
             ] as const).map(opt => (
               <label
                 key={opt.value}
@@ -133,8 +137,9 @@ export default function OnboardingPage() {
                   onChange={() => setBudget(opt.value)}
                   className="sr-only"
                 />
+                <span className="mb-1 text-2xl">{opt.emoji}</span>
                 <span className="text-sm font-medium">{opt.label}</span>
-                <span className="mt-1 text-xs text-[var(--text-3)]">{opt.sub}</span>
+                <span className={`mt-1 text-xs ${budget === opt.value ? 'opacity-75' : 'text-[var(--text-3)]'}`}>{opt.sub}</span>
               </label>
             ))}
           </div>
@@ -176,13 +181,9 @@ export default function OnboardingPage() {
           <p className="text-sm text-[var(--error)]">{error}</p>
         )}
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full rounded-lg bg-[var(--cta)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--cta-h)] disabled:opacity-50"
-        >
+        <Button type="submit" disabled={saving} size="lg" className="w-full">
           {saving ? 'Saving...' : 'Start planning'}
-        </button>
+        </Button>
       </form>
     </PageShell>
   )

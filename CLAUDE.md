@@ -14,7 +14,7 @@ No test suite is configured yet.
 
 ## Architecture
 
-**Ando** is an AI-powered travel itinerary app. Next.js 16 App Router, Supabase (auth + Postgres), OpenAI GPT-4o, Sentry, deployed on Vercel.
+**Ando** is an AI-powered travel itinerary app. **Ando** helps users not only generate itineraries, but also consolidate all their trip plans into one source. This includes, trip destination, plans, flights, transporation, budget, stay, travelers, and more. Next.js 16 App Router, Supabase (auth + Postgres), OpenAI GPT-4o, Sentry, deployed on Vercel.
 
 ### Route groups
 
@@ -93,4 +93,6 @@ Sentry config is in `.env.sentry-build-plugin` (auto-created by Sentry setup).
 ### Critical Rules
 
 1. Always generate a Git commit message after code change is made.
-2. Don't commit the code until I review it. Only generate the commit message, don't add anything to the PR.
+2. Don't commit the code until I review it. Only generate the commit message, don't add anything to the PR.\
+3. Always use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
+4. Always use frontend-design first when I ask for UI/UX related changes.
